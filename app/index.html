@@ -13,10 +13,33 @@
 	<script src="js/filters.js"></script>
 	<script src="js/directives.js"></script>
 	
-	{{'test' + '1'}}
+	<style type="text/css">
+		table.board {
+			border: 1px solid black;
+			border-collapse: collapse;
+			
+		}
+		
+		table.board td {
+			border: 1px solid black;
+			width: 90px;
+			height: 90px;
+			text-align: center;
+			vertical-align: middle;
+		}
+	</style>
 	
 	<div ng-controller="goBoard">
-		{{test}}
+		{{board}}
+		<table class="board">
+			<tr ng-repeat="row in board">
+				<td ng-repeat="place in row">
+					{{place}}
+				</td>
+			</tr>
+		</table>
+		
+		{{c}}
 	</div>
 </body>
 </html>
