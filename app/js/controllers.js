@@ -2,10 +2,7 @@
 
 /* Controllers */
 
-angular.module('myApp.controllers', []).
-  controller('MyCtrl1', [function() {
-
-  }])
-  .controller('MyCtrl2', [function() {
-
-  }]);
+var myGoApp = angular.module('myGoApp', []);
+myGoApp.controller('goBoard', function($scope) {
+	$scope.test = "aweofijaweofij";
+});
