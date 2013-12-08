@@ -31,21 +31,34 @@
 				var ctx = canvas.getContext("2d");
 				
 				var squareSize = 90;
-				var boardPadding = squareSize/2;
-				var left = boardPadding;
+				var pad = squareSize/2;
+				var left = pad;
 				var right = left + (size-1) * squareSize;
-				var top = boardPadding;
-				var bottom = boardPadding + (size-1) * squareSize;
+				var top = pad;
+				var bottom = pad + (size-1) * squareSize;
 				
 				//draw background
 				ctx.beginPath();
-				ctx.fillStyle = 
+				ctx.fillStyle = "#F2B06D";
+				var tl = {'x': left-pad, 'y': top-pad};
+				var tr = {'x': right+pad, 'y': top-pad};
+				var br = {'x': right+pad, 'y': bottom+pad};
+				var bl = {'x': left-pad, 'y': bottom+pad};
+				ctx.moveTo(tl.x, tl.y);
+				ctx.lineTo(tr.x, tr.y);
+				ctx.lineTo(br.x, br.y);
+				ctx.lineTo(bl.x, bl.y);
+				ctx.lineTo(tl.x, tl.y);
 				ctx.fill();
+				ctx.fillStyle = "#ff0000";
+				ctx.lineWidth = 6;
+				ctx.stroke();
+				ctx.lineWidth = 1;
+				ctx.closePath();
 				
-				//draw lines on board
+				//draw lines
 				ctx.beginPath();
 				ctx.fillStyle = "#000000";
-				
 				var x, y
 				for (var i = 0; i < size; i++) {
 					//vertical lines
@@ -59,7 +72,23 @@
 					ctx.lineTo(right, y);
 				}
 				ctx.stroke();
-				//*/
+				ctx.closePath();
+				
+				//draw dots
+				var dots = [];
+				if (size == 9)
+					dots = [[2,2], [2,6], [6,2], [6,6], [4,4]];
+				ctx.fillStyle = "#000000";
+				var x, y;
+				for (var i = 0; i < dots.length; i++) {
+					x = dots[i][0];
+					y = dots[i][1];
+					ctx.beginPath();
+					ctx.arc(left+x*squareSize,top+y*squareSize,5,0,Math.PI*2,true);
+					ctx.fill();
+					ctx.closePath();
+					
+				}
 			}
 		}
 	</script>
@@ -67,7 +96,7 @@
 	<style type="text/css">
 		div.place {
 			position: absolute;
-			border: 0px solid black;
+			border: 0px solid green;
 			width: 90px;
 			height: 90px;
 			text-align: center;
@@ -82,14 +111,22 @@
 			font-size: 16pt;
 			text-align: center;
 		}
+		
+		.stone {
+			width: 50px;
+			height: 50px;
+			margin-top: 20px;
+		}
 	</style>
 	
 	<div class="board" ng-controller="goBoardCtrl">
 		<canvas id="canvas" width="{{size*90}}px" height="{{size*90}}px"></canvas>
 		
-		<div class="place" ng-repeat="(i, place) in places" style="left:{{place.x*90+xPad}}px;top:{{place.y*90+yPad}}px;">
+		<div class="place" ng-repeat="(i, place) in places" ng-click="placeStone(place);"
+			style="left:{{place.x*90+xPad}}px;top:{{place.y*90+yPad}}px;">
+			<img class="stone" ng-src="img/{{place.color}}Stone.png" />
 			<div class="liberties">
-				{{place.id}}
+				
 			</div>
 		</div>
 	</div>

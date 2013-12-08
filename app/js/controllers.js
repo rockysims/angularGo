@@ -8,23 +8,29 @@ myGoApp.controller('goBoardCtrl', function($scope) {
 	var places = [];
 	var size = 9;
 	
-	for (var i = 0; i < size; i++) {
-		board[i] = [];
-		for (var j = 0; j < size; j++) {
-			board[i][j] = {
-				'id': (i+1)*j,
+	for (var x = 0; x < size; x++) {
+		board[x] = [];
+		for (var y = 0; y < size; y++) {
+			board[x][y] = {
+				'uniqueId': (x+1)*size+y,
 				'color': "e",
-				'x': i,
-				'y': j
+				'x': x,
+				'y': y
 			};
-			places[i*size+j] = board[i][j];
+			places[x*size+y] = board[x][y];
 		}
 	}
 	
-	
+	$scope.isBlacksTurn = true;
+	$scope.placeStone = function(place) {
+		if (place.color == "e") {
+			place.color = ($scope.isBlacksTurn)?"b":"w";
+			$scope.isBlacksTurn = !$scope.isBlacksTurn;
+		}
+	}
 	
 	$scope.size = size;
-	$scope.xPad = 7;
+	$scope.xPad = 8;
 	$scope.yPad = 7;
 	$scope.places = places;
 	$scope.board = board;
