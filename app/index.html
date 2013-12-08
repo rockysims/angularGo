@@ -37,6 +37,11 @@
 				var top = boardPadding;
 				var bottom = boardPadding + (size-1) * squareSize;
 				
+				//draw background
+				ctx.beginPath();
+				ctx.fillStyle = 
+				ctx.fill();
+				
 				//draw lines on board
 				ctx.beginPath();
 				ctx.fillStyle = "#000000";
@@ -62,16 +67,20 @@
 	<style type="text/css">
 		div.place {
 			position: absolute;
-			border: 1px solid red;
+			border: 0px solid black;
 			width: 90px;
 			height: 90px;
 			text-align: center;
 			vertical-align: middle;
+			z-index: 10;
 		}
-		
-		table.board {
+		div.place .liberties {
 			position: absolute;
-			border: 1px solid green;
+			left: 31px;
+			top: 37px;
+			width: 30px;
+			font-size: 16pt;
+			text-align: center;
 		}
 	</style>
 	
@@ -79,7 +88,9 @@
 		<canvas id="canvas" width="{{size*90}}px" height="{{size*90}}px"></canvas>
 		
 		<div class="place" ng-repeat="(i, place) in places" style="left:{{place.x*90+xPad}}px;top:{{place.y*90+yPad}}px;">
-			{{place.color}}
+			<div class="liberties">
+				{{place.id}}
+			</div>
 		</div>
 	</div>
 </body>

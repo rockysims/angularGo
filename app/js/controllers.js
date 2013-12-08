@@ -24,8 +24,8 @@ myGoApp.controller('goBoardCtrl', function($scope) {
 	
 	
 	$scope.size = size;
-	$scope.xPad = 10;
-	$scope.yPad = 10;
+	$scope.xPad = 7;
+	$scope.yPad = 7;
 	$scope.places = places;
 	$scope.board = board;
 });
