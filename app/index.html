@@ -110,6 +110,7 @@
 			width: 30px;
 			font-size: 16pt;
 			text-align: center;
+			color: red;
 		}
 		
 		.stone {
@@ -126,7 +127,7 @@
 			style="left:{{place.x*90+xPad}}px;top:{{place.y*90+yPad}}px;">
 			<img class="stone" ng-src="img/{{place.color}}Stone.png" />
 			<div class="liberties">
-				
+				{{place.liberties}}
 			</div>
 		</div>
 	</div>
