@@ -6,6 +6,7 @@
 	<link rel="stylesheet" href="css/app.css"/>
 </head>
 <body>
+	<script src="js/jQuery.js"></script>
 	<script src="lib/angular/angular.js"></script>
 	<script src="js/app.js"></script>
 	<script src="js/services.js"></script>
@@ -13,33 +14,73 @@
 	<script src="js/filters.js"></script>
 	<script src="js/directives.js"></script>
 	
-	<style type="text/css">
-		table.board {
-			border: 1px solid black;
-			border-collapse: collapse;
-			
-		}
+	<script type="text/javascript">
+		window.SC = function(selector){
+		    return angular.element(selector).scope();
+		};
 		
-		table.board td {
-			border: 1px solid black;
+		var size;
+		$(function() {
+			size = SC('[ng-controller=goBoardCtrl]').size;
+			drawBoard(size);
+		});
+		
+	    function drawBoard() {
+			var canvas = document.getElementById("canvas");
+			if (canvas.getContext) {
+				var ctx = canvas.getContext("2d");
+				
+				var squareSize = 90;
+				var boardPadding = squareSize/2;
+				var left = boardPadding;
+				var right = left + (size-1) * squareSize;
+				var top = boardPadding;
+				var bottom = boardPadding + (size-1) * squareSize;
+				
+				//draw lines on board
+				ctx.beginPath();
+				ctx.fillStyle = "#000000";
+				
+				var x, y
+				for (var i = 0; i < size; i++) {
+					//vertical lines
+					x = left + i*squareSize;
+					ctx.moveTo(x, top);
+					ctx.lineTo(x, bottom);
+					
+					//horizontal lines
+					y = top + i*squareSize;
+					ctx.moveTo(left, y);
+					ctx.lineTo(right, y);
+				}
+				ctx.stroke();
+				//*/
+			}
+		}
+	</script>
+	
+	<style type="text/css">
+		div.place {
+			position: absolute;
+			border: 1px solid red;
 			width: 90px;
 			height: 90px;
 			text-align: center;
 			vertical-align: middle;
 		}
+		
+		table.board {
+			position: absolute;
+			border: 1px solid green;
+		}
 	</style>
 	
-	<div ng-controller="goBoard">
-		{{board}}
-		<table class="board">
-			<tr ng-repeat="row in board">
-				<td ng-repeat="place in row">
-					{{place}}
-				</td>
-			</tr>
-		</table>
+	<div class="board" ng-controller="goBoardCtrl">
+		<canvas id="canvas" width="{{size*90}}px" height="{{size*90}}px"></canvas>
 		
-		{{c}}
+		<div class="place" ng-repeat="(i, place) in places" style="left:{{place.x*90+xPad}}px;top:{{place.y*90+yPad}}px;">
+			{{place.color}}
+		</div>
 	</div>
 </body>
 </html>

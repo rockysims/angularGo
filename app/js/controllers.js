@@ -3,25 +3,29 @@
 /* Controllers */
 
 var myGoApp = angular.module('myGoApp', []);
-myGoApp.controller('goBoard', function($scope) {
-	var EMPTY = 0;
-	var BLACK = 1;
-	var WHITE = 2;
-	
+myGoApp.controller('goBoardCtrl', function($scope) {
 	var board = [];
+	var places = [];
 	var size = 9;
 	
 	for (var i = 0; i < size; i++) {
 		board[i] = [];
 		for (var j = 0; j < size; j++) {
-			board[i][j] = i*j;
-			//board[i][j] = 33; //TODO: uncomment out this line to reproduce bug where the whole board table disappears
-			board[0][2] = 98765;
+			board[i][j] = {
+				'id': (i+1)*j,
+				'color': "e",
+				'x': i,
+				'y': j
+			};
+			places[i*size+j] = board[i][j];
 		}
 	}
 	
 	
-	$scope.c = $scope.c++ || 1;
 	
+	$scope.size = size;
+	$scope.xPad = 10;
+	$scope.yPad = 10;
+	$scope.places = places;
 	$scope.board = board;
 });
