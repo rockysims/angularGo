@@ -10,44 +10,57 @@ var Place = function(x, y) {
 	this.x = x;
 	this.y = y;
 	this.color = EMPTY;
-	this.group = null;
+	this.group = new Group(this);
 	this.adjacentPlaces = []; //populated by Board constructor
+};
+
+Place.prototype.liberties = function() {
+	if (this.group != null) {
+		
+	} else
+		return 0
+	return this.group.liberties.length;
 };
 
 //Group wraps an array of places
 var Group = function(place) {
 	this.stones = [place];
 	this.liberties = [];
+	this.color = place.color;
+	
+	var a, i;
 	
 	//fill liberties[]
-	var a;
 	for (i in place.adjacentPlaces) {
 		a = place.adjacentPlaces[i];
 		if (a.color == EMPTY)
 			this.liberties.push(a);
 	}
 	
-	//mergeWithAdjacentGroups
-	var a;
+	var arrayUnique = function(array) {
+		var a = array.concat();
+		for(var i=0; i<a.length; ++i) {
+			for(var j=i+1; j<a.length; ++j) {
+				if(a[i] === a[j])
+					a.splice(j--, 1);
+			}
+		}
+
+		return a;
+	};
+	//merge with adjacent groups
 	for (i in place.adjacentPlaces) {
 		a = place.adjacentPlaces[i];
 		
 		//merge stones
-		this.stones = arrayUnique(this.stones, a.group.stones);
-		a.group = this;
-		
-		
-		//this.merge(a.group);
+		if (this.color == a.color) {
+			//merge liberties
+			this.liberties = arrayUnique(this.liberties, a.group.liberties);
+			//merge stones
+			this.stones = arrayUnique(this.stones, a.group.stones);
+			a.group = this;
+		}
 	}
-};
-
-Group.prototype.merge = function(group2) {
-	//merge stones
-	this.stones = arrayUnique(this.stones, group2.stones);
-	group2 = this;
-	
-	//calc liberties
-	
 };
 
 
@@ -78,10 +91,10 @@ var Board = function(size) {
 	for (var x = 0; x < size; x++) {
 		for (var y = 0; y < size; y++) {
 			var a, adjacents = [];
-			if (a = getPlaceByXY(x+1, y) != null) adjacents[adjacents.length] = a;
-			if (a = getPlaceByXY(x-1, y) != null) adjacents[adjacents.length] = a;
-			if (a = getPlaceByXY(x, y+1) != null) adjacents[adjacents.length] = a;
-			if (a = getPlaceByXY(x, y-1) != null) adjacents[adjacents.length] = a;
+			if ((a = getPlaceByXY(x+1, y)) != null) adjacents[adjacents.length] = a;
+			if ((a = getPlaceByXY(x-1, y)) != null) adjacents[adjacents.length] = a;
+			if ((a = getPlaceByXY(x, y+1)) != null) adjacents[adjacents.length] = a;
+			if ((a = getPlaceByXY(x, y-1)) != null) adjacents[adjacents.length] = a;
 			
 			getPlaceByXY(x, y).adjacentPlaces = adjacents;
 		}
@@ -97,6 +110,9 @@ Board.prototype.getTurnColor = function() {
 Board.prototype.placeStone = function(place) {
 	if (place.color == EMPTY) {
 		var color = this.getTurnColor();
+		
+		place.group = new Group(place);
+		
 		place.color = color;
 		this.moves.push(color + place.x + "," + place.y);
 	}
@@ -125,7 +141,6 @@ myGoApp.controller('goBoardCtrl', function($scope) {
 		board.placeStone(place);
 	};
 	$scope.places = board.places; //shortcut
-	
 	
 	$scope.alert = function(s) {alert(s)};
 });

@@ -124,12 +124,13 @@
 	
 	<div class="board" ng-controller="goBoardCtrl">
 		<canvas id="canvas" width="{{size*90}}px" height="{{size*90}}px"></canvas>
-		
+		x{{size}}x
+		z{{places[0].group.liberties.length}}z
 		<div class="place" ng-repeat="(i, place) in places" ng-click="placeStone(place);"
 			style="left:{{place.x*90+8}}px;top:{{place.y*90+7}}px;">
 			<img class="stone" ng-src="img/{{place.color}}Stone.png" />
 			<div class="liberties">
-				4
+				{{place.group.liberties.length}}
 			</div>
 		</div>
 	</div>
