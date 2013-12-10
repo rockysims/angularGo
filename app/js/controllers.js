@@ -16,19 +16,38 @@ var Place = function(x, y) {
 
 //Group wraps an array of places
 var Group = function(place) {
-	this.places = [place];
+	this.stones = [place];
+	this.liberties = [];
+	
+	//fill liberties[]
+	var a;
+	for (i in place.adjacentPlaces) {
+		a = place.adjacentPlaces[i];
+		if (a.color == EMPTY)
+			this.liberties.push(a);
+	}
 	
 	//mergeWithAdjacentGroups
 	var a;
 	for (i in place.adjacentPlaces) {
 		a = place.adjacentPlaces[i];
-		this.merge(a.group);
+		
+		//merge stones
+		this.stones = arrayUnique(this.stones, a.group.stones);
+		a.group = this;
+		
+		
+		//this.merge(a.group);
 	}
 };
 
-Group.merge = function(group2) {
-	this.places = arrayUnique(this.places, group2.places);
-	group2.places = this.places;
+Group.prototype.merge = function(group2) {
+	//merge stones
+	this.stones = arrayUnique(this.stones, group2.stones);
+	group2 = this;
+	
+	//calc liberties
+	
 };
 
 
@@ -49,8 +68,6 @@ var Board = function(size) {
 		}
 	}
 	
-	/*
-	
 	//fill places[].adjacents[] = the (usually) 4 adjacent places
 	var getPlaceByXY = function(x, y) {
 		if (x >= 0 && x < size && y >= 0 && y < size)
@@ -69,25 +86,25 @@ var Board = function(size) {
 			getPlaceByXY(x, y).adjacentPlaces = adjacents;
 		}
 	}
-	//*/
 };
 
-Board.getTurnColor = function() {
+Board.prototype.getTurnColor = function() {
+	var moves = this.moves;
 	var isBlacksTurn = moves[moves.length - 1].indexOf("w") == 0;
 	return (isBlacksTurn)?"b":"w";
 };
 
-Board.placeStone = function(place) {
-	if (place.color != EMPTY) {
-		var color = getTurnColor();
+Board.prototype.placeStone = function(place) {
+	if (place.color == EMPTY) {
+		var color = this.getTurnColor();
 		place.color = color;
-		moves.push(color + place.x + "," + place.y);
+		this.moves.push(color + place.x + "," + place.y);
 	}
 };
 
-Board.pass = function() {
-	var color = getTurnColor();
-	moves.push(color + "Pass");
+Board.prototype.pass = function() {
+	var color = this.getTurnColor();
+	this.moves.push(color + "Pass");
 };
 /* Go game logic ^^ */
 
@@ -104,11 +121,13 @@ myGoApp.controller('goBoardCtrl', function($scope) {
 	$scope.board = new Board(size);
 	var board = $scope.board;
 	$scope.size = size;
-	$scope.placeStone = board.placeStone; //function
+	$scope.placeStone = function(place) {
+		board.placeStone(place);
+	};
 	$scope.places = board.places; //shortcut
 	
 	
-	
+	$scope.alert = function(s) {alert(s)};
 });
 
 
