@@ -34,6 +34,7 @@ Group.merge = function(group2) {
 
 
 
+
 var Board = function(size) {
 	this.size = size;
 	this.moves = ['emptyBoard'];
@@ -41,11 +42,14 @@ var Board = function(size) {
 	var places = this.places;
 	
 	//fill places[] = new Place
-	for (var x = 0; x < size; x++) {
-		for (var y = 0; y < size; y++) {
+	var x, y;
+	for (x = 0; x < size; x++) {
+		for (y = 0; y < size; y++) {
 			places[x*size+y] = new Place(x, y);
 		}
 	}
+	
+	/*
 	
 	//fill places[].adjacents[] = the (usually) 4 adjacent places
 	var getPlaceByXY = function(x, y) {
@@ -65,6 +69,7 @@ var Board = function(size) {
 			getPlaceByXY(x, y).adjacentPlaces = adjacents;
 		}
 	}
+	//*/
 };
 
 Board.getTurnColor = function() {
@@ -89,7 +94,10 @@ Board.pass = function() {
 /* Controllers */
 
 var myGoApp = angular.module('myGoApp', []);
-myGoApp = {'controller':function(){}}; //TODO: remove this line
+
+myGoApp.controller('testCtrl', function($scope) {
+	$scope.test = 0;
+});
 
 myGoApp.controller('goBoardCtrl', function($scope) {
 	var size = 9;
@@ -102,7 +110,6 @@ myGoApp.controller('goBoardCtrl', function($scope) {
 	
 	
 });
-
 
 
 

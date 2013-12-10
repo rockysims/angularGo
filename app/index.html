@@ -121,22 +121,32 @@
 			margin-top: 20px;
 		}
 	</style>
-	{{x = 0}}
-	<input type="button" ng-click="x = x + 1" value="+1"></input>
-	x: {{x}}
 	
-	<!--
+	<div ng-controller="testCtrl">
+		test: {{test}}
+		<input type="button" ng-click="test = test + 1" value="+1"></input>
+		
+	</div>
+	
 	<div class="board" ng-controller="goBoardCtrl">
 		<canvas id="canvas" width="{{size*90}}px" height="{{size*90}}px"></canvas>
 		
+		
+		<div class="place" ng-repeat="(i, place) in places" ng-click="placeStone(place);" style="left:{{(place.x+1-0)*90+8}}px;top:{{place.y*90+7}}px;">
+			<br/>
+			left:{{place.x*90+8}}px;top:{{place.y*90+7}}px;
+		</div>
+		
+		<!--
 		<div class="place" ng-repeat="(i, place) in places" ng-click="placeStone(place);"
 			style="left:{{place.x*90+8}}px;top:{{place.y*90+7}}px;">
 			<img class="stone" ng-src="img/{{place.color}}Stone.png" />
 			<div class="liberties">
-				{{place.groupLiberties || ""}}
+				4
 			</div>
 		</div>
+		-->
 	</div>
-	-->
+	
 </body>
 </html>
