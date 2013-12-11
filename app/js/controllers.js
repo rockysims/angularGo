@@ -1,5 +1,28 @@
 'use strict';
 
+/* Utilities */
+var arrayRemove = function(a, e) {
+	var index = a.indexOf(e);
+	if (index > -1) {
+	    a.splice(index, 1);
+	}
+};
+var arrayUnique = function(array) {
+	var a = array.concat();
+	for(var i=0; i<a.length; ++i) {
+		for(var j=i+1; j<a.length; ++j) {
+			if(a[i] === a[j])
+				a.splice(j--, 1);
+		}
+	}
+	
+	return a;
+};
+var arrayMerge = function(a1, a2) {
+	return arrayUnique(a1.concat(a2));
+};
+/* Utilities ^^ */
+
 /* Go game logic */
 var EMPTY = "e";
 var BLACK = "b";
@@ -14,14 +37,6 @@ var Place = function(x, y) {
 	this.adjacentPlaces = []; //populated by Board constructor
 };
 
-Place.prototype.liberties = function() {
-	if (this.group != null) {
-		
-	} else
-		return 0
-	return this.group.liberties.length;
-};
-
 //Group wraps an array of places
 var Group = function(place) {
 	this.stones = [place];
@@ -30,35 +45,37 @@ var Group = function(place) {
 	
 	var a, i;
 	
-	//fill liberties[]
-	for (i in place.adjacentPlaces) {
-		a = place.adjacentPlaces[i];
-		if (a.color == EMPTY)
-			this.liberties.push(a);
-	}
-	
-	var arrayUnique = function(array) {
-		var a = array.concat();
-		for(var i=0; i<a.length; ++i) {
-			for(var j=i+1; j<a.length; ++j) {
-				if(a[i] === a[j])
-					a.splice(j--, 1);
+	if (place.color != EMPTY) {
+		//fill liberties[]
+		for (i in place.adjacentPlaces) {
+			a = place.adjacentPlaces[i];
+			if (a.color == EMPTY)
+				this.liberties.push(a);
+		}
+		
+		//merge with adjacent groups
+		for (i in place.adjacentPlaces) {
+			a = place.adjacentPlaces[i];
+			
+			//merge stones
+			if (this.color == a.color) {
+				//merge liberties
+				this.liberties = arrayMerge(this.liberties, a.group.liberties);
+				//merge stones
+				this.stones = arrayMerge(this.stones, a.group.stones);
+				a.group = this;
 			}
 		}
-
-		return a;
-	};
-	//merge with adjacent groups
-	for (i in place.adjacentPlaces) {
-		a = place.adjacentPlaces[i];
+		//remove place from liberties because place is now a filled liberty
+		for (i in place.adjacentPlaces) {
+			a = place.adjacentPlaces[i];
+			a.group.liberties = arrayRemove(a.group.liberties, place);
+		}
 		
-		//merge stones
-		if (this.color == a.color) {
-			//merge liberties
-			this.liberties = arrayUnique(this.liberties, a.group.liberties);
-			//merge stones
-			this.stones = arrayUnique(this.stones, a.group.stones);
-			a.group = this;
+		var p;
+		for (i in place.group.stones) {
+			p = place.group.stones[i];
+			p.group = this;
 		}
 	}
 };
@@ -103,19 +120,40 @@ var Board = function(size) {
 
 Board.prototype.getTurnColor = function() {
 	var moves = this.moves;
-	var isBlacksTurn = moves[moves.length - 1].indexOf("w") == 0;
+	var isBlacksTurn = moves[moves.length - 1].indexOf("b") != 0;
 	return (isBlacksTurn)?"b":"w";
 };
 
 Board.prototype.placeStone = function(place) {
 	if (place.color == EMPTY) {
 		var color = this.getTurnColor();
-		
+
+		place.color = color;
 		place.group = new Group(place);
 		
-		place.color = color;
 		this.moves.push(color + place.x + "," + place.y);
+	} 
+	//*
+	else {
+		var i;
+		var p;
+
+		for (i in this.places) {
+			p = this.places[i];
+			p.debug = "red";
+		}
+		
+		for (i in place.group.liberties) {
+			p = place.group.liberties[i];
+			p.debug = "green";
+		}
+		
+		for (i in place.group.stones) {
+			p = place.group.stones[i];
+			p.debug = "yellow";
+		}
 	}
+	//*/
 };
 
 Board.prototype.pass = function() {
