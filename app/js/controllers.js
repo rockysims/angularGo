@@ -1,10 +1,12 @@
 'use strict';
 
 /* Utilities */
-var arrayRemove = function(a, e) {
-	var index = a.indexOf(e);
+var arrayRemove = function(ary, e) {
+//	if (typeof(ary) != 'array') 
+//		throw "arrayRemove(): Error: typeof(ary) != 'array'.";
+	var index = ary.indexOf(e);
 	if (index > -1) {
-	    a.splice(index, 1);
+	    ary.splice(index, 1);
 	}
 };
 var arrayUnique = function(array) {
@@ -67,9 +69,11 @@ var Group = function(place) {
 			}
 		}
 		//remove place from liberties because place is now a filled liberty
+		var liberties;
 		for (i in place.adjacentPlaces) {
 			a = place.adjacentPlaces[i];
-			a.group.liberties = arrayRemove(a.group.liberties, place);
+			liberties = a.group.liberties;
+			a.group.liberties = arrayRemove(liberties, place);
 		}
 		
 		var p;
