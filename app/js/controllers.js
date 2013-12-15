@@ -2,12 +2,19 @@
 
 /* Utilities */
 var arrayRemove = function(ary, e) {
+	if (typeof(ary) == 'undefined') 
+		alert("arrayRemove(): Error: typeof(ary) == 'undefined'.");
 //	if (typeof(ary) != 'array') 
 //		throw "arrayRemove(): Error: typeof(ary) != 'array'.";
 	var index = ary.indexOf(e);
 	if (index > -1) {
 	    ary.splice(index, 1);
 	}
+	
+	if (typeof(ary) == 'undefined') 
+		alert("arrayRemove(): Error: return undefined");
+		
+	return ary;
 };
 var arrayUnique = function(array) {
 	var a = array.concat();
@@ -40,7 +47,9 @@ var Place = function(x, y) {
 };
 
 //Group wraps an array of places
+var nextGroupId = 0;
 var Group = function(place) {
+	this.id = nextGroupId++;
 	this.stones = [place];
 	this.liberties = [];
 	this.color = place.color;
@@ -66,20 +75,27 @@ var Group = function(place) {
 				//merge stones
 				this.stones = arrayMerge(this.stones, a.group.stones);
 				a.group = this;
+				
+				//update .group of all stones in a.group
+				var s;
+				for (i in a.group.stones) {
+					s = a.group.stones[i];
+					s.group = this;
+				}
 			}
 		}
 		//remove place from liberties because place is now a filled liberty
 		var liberties;
 		for (i in place.adjacentPlaces) {
 			a = place.adjacentPlaces[i];
+			
+			if (typeof(a) == 'undefined')
+				alert("a is undefined");
+			
 			liberties = a.group.liberties;
+			if (typeof(liberties) == 'undefined')
+				alert("liberties is undefined");
 			a.group.liberties = arrayRemove(liberties, place);
-		}
-		
-		var p;
-		for (i in place.group.stones) {
-			p = place.group.stones[i];
-			p.group = this;
 		}
 	}
 };
@@ -98,28 +114,31 @@ var Board = function(size) {
 	var x, y;
 	for (x = 0; x < size; x++) {
 		for (y = 0; y < size; y++) {
-			places[x*size+y] = new Place(x, y);
+			places[y*size+x] = new Place(x, y);
 		}
 	}
 	
 	//fill places[].adjacents[] = the (usually) 4 adjacent places
-	var getPlaceByXY = function(x, y) {
-		if (x >= 0 && x < size && y >= 0 && y < size)
-			return places[x*size+y];
-		else
-			return null;
-	};
 	for (var x = 0; x < size; x++) {
 		for (var y = 0; y < size; y++) {
 			var a, adjacents = [];
-			if ((a = getPlaceByXY(x+1, y)) != null) adjacents[adjacents.length] = a;
-			if ((a = getPlaceByXY(x-1, y)) != null) adjacents[adjacents.length] = a;
-			if ((a = getPlaceByXY(x, y+1)) != null) adjacents[adjacents.length] = a;
-			if ((a = getPlaceByXY(x, y-1)) != null) adjacents[adjacents.length] = a;
+			if ((a = this.getPlaceByXY(x+1, y)) != null) adjacents[adjacents.length] = a;
+			if ((a = this.getPlaceByXY(x-1, y)) != null) adjacents[adjacents.length] = a;
+			if ((a = this.getPlaceByXY(x, y+1)) != null) adjacents[adjacents.length] = a;
+			if ((a = this.getPlaceByXY(x, y-1)) != null) adjacents[adjacents.length] = a;
 			
-			getPlaceByXY(x, y).adjacentPlaces = adjacents;
+			this.getPlaceByXY(x, y).adjacentPlaces = adjacents;
 		}
 	}
+};
+
+Board.prototype.getPlaceByXY = function(x, y) {
+	var size = this.size;
+	var places = this.places;
+	if (x >= 0 && x < size && y >= 0 && y < size)
+		return places[y*size+x];
+	else
+		return null;
 };
 
 Board.prototype.getTurnColor = function() {
@@ -137,21 +156,24 @@ Board.prototype.placeStone = function(place) {
 		
 		this.moves.push(color + place.x + "," + place.y);
 	} 
-	//*
+	//* debug
 	else {
 		var i;
 		var p;
-
+		
+		//init all places to red text
 		for (i in this.places) {
 			p = this.places[i];
 			p.debug = "red";
 		}
 		
+		//color text of all liberties of clicked group green
 		for (i in place.group.liberties) {
 			p = place.group.liberties[i];
 			p.debug = "green";
 		}
 		
+		//color text of all stones of clicked group yellow
 		for (i in place.group.stones) {
 			p = place.group.stones[i];
 			p.debug = "yellow";
@@ -181,6 +203,7 @@ myGoApp.controller('goBoardCtrl', function($scope) {
 	$scope.size = size;
 	$scope.placeStone = function(place) {
 		board.placeStone(place);
+		$scope.debugPlace = place;
 	};
 	$scope.places = board.places; //shortcut
 	
@@ -208,7 +231,7 @@ for (var x = 0; x < size; x++) {
 			'x': x,
 			'y': y
 		};
-		places[x*size+y] = board[x][y];
+		places[y*size+x] = board[x][y];
 	}
 }
 

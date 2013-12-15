@@ -130,12 +130,20 @@
 			style="left:{{place.x*90+8}}px;top:{{place.y*90+7}}px;">
 			<img class="stone" ng-src="img/{{place.color}}Stone.png" />
 			<div class="liberties">
-				<font style="color: {{place.debug}};">
-				{{place.group.liberties.length}}
+				<font style="color: {{place.debug}};" ng-hide="place.group.liberties.length == 0">
+					{{place.group.liberties.length}}
 				</font>
 			</div>
 		</div>
+		
+		<div id="debug">
+			{{debugPlace}}<br/>
+			<br/>
+			stones: {{debugPlace.group.stones.length}}<br/>
+			groupId: {{debugPlace.group.id}}<br/>
+			x: {{debugPlace.x}}<br/>
+			y: {{debugPlace.y}}<br/>
+		</div>
 	</div>
-	
 </body>
 </html>
