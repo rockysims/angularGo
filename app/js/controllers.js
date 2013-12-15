@@ -16,8 +16,9 @@ var arrayRemove = function(ary, e) {
 		
 	return ary;
 };
-var arrayUnique = function(array) {
-	var a = array.concat();
+
+var arrayMerge = function(a1, a2) {
+	var a = a1.concat(a2);
 	for(var i=0; i<a.length; ++i) {
 		for(var j=i+1; j<a.length; ++j) {
 			if(a[i] === a[j])
@@ -26,9 +27,6 @@ var arrayUnique = function(array) {
 	}
 	
 	return a;
-};
-var arrayMerge = function(a1, a2) {
-	return arrayUnique(a1.concat(a2));
 };
 /* Utilities ^^ */
 
