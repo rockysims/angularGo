@@ -106,10 +106,6 @@ describe('Board', function() {
 		
 		var g1 = board.getPlaceByXY(4, 4).group;
 		var g2 = board.getPlaceByXY(5, 4).group;
-		alert(g1);
-		alert(g2);
-		alert(g1 === g2);
-		alert(g1 !== g2);
 		expect(g1.id).toBe(g2.id);
 	});
 	
@@ -134,9 +130,54 @@ describe('Board', function() {
 		expect(board.getPlaceByXY(5, 4).color).toBe("b");
 		expect(board.getPlaceByXY(6, 4).color).toBe("b");
 		
-		var g44 = board.getPlaceByXY(4, 4).group;
+		expect(board.getPlaceByXY(4, 4).group.id).toBe(board.getPlaceByXY(5, 4).group.id);
+		expect(board.getPlaceByXY(5, 4).group.id).toBe(board.getPlaceByXY(6, 4).group.id);
+	});
+	
+	it("handles multiple stones in a group sharing a liberty", function() {
+		var place;
+		place = board.getPlaceByXY(4, 4); //black
+		board.placeStone(place);
+		place = board.getPlaceByXY(0, 0); //white
+		board.placeStone(place);
+		place = board.getPlaceByXY(5, 4); //black
+		board.placeStone(place);
+		place = board.getPlaceByXY(1, 0); //white
+		board.placeStone(place);
+		place = board.getPlaceByXY(4, 5); //black
+		board.placeStone(place);
+		
+		expect(board.getPlaceByXY(4, 4).color).toBe("b");
+		expect(board.getPlaceByXY(5, 4).color).toBe("b");
+		expect(board.getPlaceByXY(4, 5).color).toBe("b");
+		
+		expect(board.getPlaceByXY(4, 4).group.id).toBe(board.getPlaceByXY(5, 4).group.id);
 		expect(board.getPlaceByXY(4, 4).group.id).toBe(board.getPlaceByXY(4, 5).group.id);
-		expect(board.getPlaceByXY(5, 4).group.id).toBe(board.getPlaceByXY(4, 5).group.id);
+		
+		expect(board.getPlaceByXY(4, 4).group.liberties.length).toBe(7)
+	});
+	
+	it("correctly handles capture of a single stone", function() {
+		var place;
+		place = board.getPlaceByXY(4, 4); //black (piece to be captured)
+		board.placeStone(place);
+		place = board.getPlaceByXY(3, 4); //white (left)
+		board.placeStone(place);
+		place = board.getPlaceByXY(0, 0); //black
+		board.placeStone(place);
+		place = board.getPlaceByXY(5, 4); //white (right)
+		board.placeStone(place);
+		place = board.getPlaceByXY(1, 0); //black
+		board.placeStone(place);
+		place = board.getPlaceByXY(4, 3); //white (top)
+		board.placeStone(place);
+		place = board.getPlaceByXY(2, 0); //black
+		board.placeStone(place);
+		place = board.getPlaceByXY(4, 5); //white (bottom)
+		board.placeStone(place);
+		
+		var center = board.getPlaceByXY(4, 4);
+		expect(center.color).toBe('e');
 	});
 	
 	/*

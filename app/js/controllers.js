@@ -48,59 +48,39 @@ var Place = function(x, y) {
 var nextGroupId = 0;
 var Group = function(place) {
 	this.id = nextGroupId++;
-	this.stones = [place];
 	this.liberties = [];
 	this.color = place.color;
+	this.stones = (place != null)?[place]:[];
 	
-	var a, i;
-	
-	if (place.color != EMPTY) {
-		//fill liberties[]
-		for (i in place.adjacentPlaces) {
-			a = place.adjacentPlaces[i];
-			if (a.color == EMPTY)
-				this.liberties.push(a);
-		}
-		
-		//merge with adjacent groups
-		for (i in place.adjacentPlaces) {
-			a = place.adjacentPlaces[i];
-			
-			//merge stones
-			if (this.color == a.color) {
-				//merge liberties
-				this.liberties = arrayMerge(this.liberties, a.group.liberties);
-				//merge stones
-				this.stones = arrayMerge(this.stones, a.group.stones);
-				a.group = this;
+	if (this.color != EMPTY) {
+		//add adjacent stones/liberties to this group recursively
+		var checkAdjacentPlacesRecurs = function(center, group) {
+			var a, i;
+			for (i in center.adjacentPlaces) {
+				a = center.adjacentPlaces[i];
 				
-				//update .group of all stones in a.group
-				var s;
-				for (i in a.group.stones) {
-					s = a.group.stones[i];
-					s.group = this;
+				if (group.stones.indexOf(a) == -1) {
+					//adjacent stone not already part of group
+					
+					//add place as liberty (if not already added)
+					if (a.color == EMPTY) {
+						if (group.liberties.indexOf(a) == -1)
+							group.liberties.push(a);
+					}
+					//add place as stone (if not already added)
+					if (a.color == group.color) {
+						if (group.stones.indexOf(a) == -1)
+							group.stones.push(a);
+						a.group = group;
+						checkAdjacentPlacesRecurs(a, group);
+					}
 				}
 			}
-		}
-		//remove place from liberties because place is now a filled liberty
-		var liberties;
-		for (i in place.adjacentPlaces) {
-			a = place.adjacentPlaces[i];
-			
-			if (typeof(a) == 'undefined')
-				alert("a is undefined");
-			
-			liberties = a.group.liberties;
-			if (typeof(liberties) == 'undefined')
-				alert("liberties is undefined");
-			a.group.liberties = arrayRemove(liberties, place);
-		}
+		};
+		checkAdjacentPlacesRecurs(place, this);
 	}
 };
-
-
-
-
+//*/
 
 var Board = function(size) {
 	this.size = size;
@@ -124,12 +104,28 @@ var Board = function(size) {
 	for (var x = 0; x < size; x++) {
 		for (var y = 0; y < size; y++) {
 			var a, adjacents = [];
-			if ((a = this.getPlaceByXY(x+1, y)) != null) adjacents[adjacents.length] = a;
-			if ((a = this.getPlaceByXY(x-1, y)) != null) adjacents[adjacents.length] = a;
-			if ((a = this.getPlaceByXY(x, y+1)) != null) adjacents[adjacents.length] = a;
-			if ((a = this.getPlaceByXY(x, y-1)) != null) adjacents[adjacents.length] = a;
+			if ((a = this.getPlaceByXY(x+1, y)) != null) adjacents.push(a);
+			if ((a = this.getPlaceByXY(x-1, y)) != null) adjacents.push(a);
+			if ((a = this.getPlaceByXY(x, y+1)) != null) adjacents.push(a);
+			if ((a = this.getPlaceByXY(x, y-1)) != null) adjacents.push(a);
 			
 			this.getPlaceByXY(x, y).adjacentPlaces = adjacents;
+		}
+	}
+};
+
+Board.prototype.refreshGroups = function() {
+	var i;
+	var p;
+	for (i in this.places) {
+		p = this.places[i];
+		p.group = null;
+	}
+	
+	for (i in this.places) {
+		p = this.places[i];
+		if (p.group == null) {
+			p.group = new Group(p);
 		}
 	}
 };
@@ -152,9 +148,8 @@ Board.prototype.getTurnColor = function() {
 Board.prototype.placeStone = function(place) {
 	if (place.color == EMPTY) {
 		var color = this.getTurnColor();
-
+		
 		place.color = color;
-		place.group = new Group(place);
 		
 		this.moves.push(color + place.x + "," + place.y);
 		
@@ -163,17 +158,23 @@ Board.prototype.placeStone = function(place) {
 		var a;
 		for (i in place.adjacentPlaces) {
 			a = place.adjacentPlaces[i];
-			if (a.group.liberties.length == 0) {
-				//capture(a.group);
-				var j;
-				var p;
-				for (j in a.group.stones) {
-					p = a.group.stones[j];
-					this.prisoners[p.color]++;
-					p.color = "e";
+			if (a.group.color != "e") {
+				a.group = new Group(a); //refresh group info about the adjacent stone a
+				if (a.group.liberties.length == 0) {
+					//capture(a.group);
+					var j;
+					var p;
+					for (j in a.group.stones) {
+						p = a.group.stones[j];
+						this.prisoners[p.color]++;
+						p.color = "e";
+					}
 				}
 			}
 		}
+		
+		//refresh groups
+		this.refreshGroups();
 	}
 };
 
