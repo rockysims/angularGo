@@ -110,6 +110,10 @@ var Board = function(size) {
 	this.places = [];
 	var places = this.places;
 	
+	this.prisoners = [];
+	this.prisoners['b'] = 0;
+	this.prisoners['w'] = 0;
+	
 	//fill places[] = new Place
 	var x, y;
 	for (x = 0; x < size; x++) {
@@ -155,12 +159,33 @@ Board.prototype.placeStone = function(place) {
 		place.group = new Group(place);
 		
 		this.moves.push(color + place.x + "," + place.y);
+		
+		//capture stones?
+		var i;
+		var a;
+		for (i in place.adjacentPlaces) {
+			a = place.adjacentPlaces[i];
+			if (a.group.liberties.length == 0) {
+				//capture(a.group);
+				var j;
+				var p;
+				for (j in a.group.stones) {
+					p = a.group.stones[j];
+					this.prisoners[p.color]++;
+					p.color = "e";
+				}
+			}
+		}
 	}
 };
 
 Board.prototype.pass = function() {
 	var color = this.getTurnColor();
 	this.moves.push(color + "Pass");
+};
+
+Board.prototype.undo = function() {
+	alert('TODO: implement board.undo()');
 };
 /* Go game logic ^^ */
 
@@ -174,9 +199,11 @@ myGoApp.controller('testCtrl', function($scope) {
 
 myGoApp.controller('goBoardCtrl', function($scope) {
 	var size = 13;
+	var squareSize = 60;
 	$scope.board = new Board(size);
 	var board = $scope.board;
 	$scope.size = size;
+	$scope.squareSize = squareSize;
 	$scope.placeStone = function(place) {
 		board.placeStone(place);
 		$scope.debugPlace = place;

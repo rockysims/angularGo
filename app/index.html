@@ -19,11 +19,14 @@
 			return angular.element(selector).scope();
 		}
 		
+		var squareSize;
 		var size;
 		$(function() {
 			if (SC('[ng-controller=goBoardCtrl]') != undefined) {
 				size = SC('[ng-controller=goBoardCtrl]').size;
-				drawBoard(size);
+				squareSize = SC('[ng-controller=goBoardCtrl]').squareSize;
+				
+				drawBoard();
 			}
 		});
 		
@@ -32,7 +35,6 @@
 			if (canvas.getContext) {
 				var ctx = canvas.getContext("2d");
 				
-				var squareSize = 90;
 				var pad = squareSize/2;
 				var left = pad;
 				var right = left + (size-1) * squareSize;
@@ -80,6 +82,8 @@
 				var dots = [];
 				if (size == 9)
 					dots = [[2,2], [2,6], [6,2], [6,6], [4,4]];
+				if (size == 13)
+					dots = [[3,3], [3,9], [9,3], [9,9], [6,6]];
 				ctx.fillStyle = "#000000";
 				var x, y;
 				for (var i = 0; i < dots.length; i++) {
@@ -99,16 +103,16 @@
 		div.place {
 			position: absolute;
 			border: 0px solid green;
-			width: 90px;
-			height: 90px;
+			width: 60px;
+			height: 60px;
 			text-align: center;
 			vertical-align: middle;
 			z-index: 10;
 		}
 		div.place .liberties {
 			position: absolute;
-			left: 31px;
-			top: 37px;
+			left: 16px;
+			top: 23px;
 			width: 30px;
 			font-size: 16pt;
 			text-align: center;
@@ -116,15 +120,15 @@
 		}
 		
 		.stone {
-			width: 50px;
-			height: 50px;
-			margin-top: 20px;
+			width: 45px;
+			height: 45px;
+			margin-top: 8px;
 		}
 	</style>
 	
 	<div class="board" ng-controller="goBoardCtrl">
-		<canvas id="canvas" width="{{size*90}}px" height="{{size*90}}px"></canvas>
-		<div class="place" style="left:{{place.x*90+8}}px;top:{{place.y*90+7}}px;"
+		<canvas id="canvas" width="{{size*squareSize}}px" height="{{size*squareSize}}px"></canvas>
+		<div class="place" style="left:{{place.x*squareSize+8}}px;top:{{place.y*squareSize+7}}px;"
 			ng-repeat="(i, place) in places" 
 			ng-click="placeStone(place);"
 			ng-hover="board.hoveredPlace = place;">
@@ -134,7 +138,16 @@
 			</div>
 		</div>
 		
-		<div id="debug">
+		<div>
+			<input type="button" value="undo" ng-click="board.undo();" style="display:none;"></input>
+			<br/>
+			{{(board.getTurnColor()=='b')?'Black':'White'}} to play.<br/>
+			<br/>
+			Black captured: {{board.prisoners['w']}}<br/>
+			White captured: {{board.prisoners['b']}}<br/>
+		</div>
+		
+		<div id="debug" style="display:none;">
 			stones: {{debugPlace.group.stones.length}}<br/>
 			groupId: {{debugPlace.group.id}}<br/>
 			x: {{debugPlace.x}}<br/>
