@@ -31,6 +31,23 @@ var arrayMerge = function(a1, a2) {
 /* Utilities ^^ */
 
 /* Go game logic */
+
+/* TODO
+map liberties to size of stone image
+onHover, display 50% opacity stone
+ko rule
+suicide rule
+move stack (board snapshots)
+	undo, redo buttons
+
+
+Later:
+mark potential, false, and complete eyes
+mark cutting points and protected points like tiger's mouth
+mark forcing moves
+onHover, show change in liberties, enemy liberties removed, territory gained (range)?
+*/
+
 var EMPTY = "e";
 var BLACK = "b";
 var WHITE = "w";
@@ -42,6 +59,23 @@ var Place = function(x, y) {
 	this.color = EMPTY;
 	this.group = new Group(this);
 	this.adjacentPlaces = []; //populated by Board constructor
+	this.size = 45; //used as width and height in pixels
+};
+
+Place.prototype.refreshSize = function() {
+	var liberties = this.group.liberties.length;
+	var mapLibToSize = [];
+	mapLibToSize[1] = 30;
+	mapLibToSize[2] = 35;
+	mapLibToSize[3] = 40;
+	mapLibToSize[4] = 45;
+	mapLibToSize[5] = 50;
+	mapLibToSize[6] = 55;
+	mapLibToSize[7] = 60;
+	if (liberties > 7) 
+		liberties = 7;
+	
+	this.size = mapLibToSize[liberties];
 };
 
 //Group wraps an array of places
@@ -128,6 +162,13 @@ Board.prototype.refreshGroups = function() {
 			p.group = new Group(p);
 		}
 	}
+	
+	//update stone sizes to match liberties
+	for (i in this.places) {
+		p = this.places[i];
+		if (p.color != EMPTY)
+			p.refreshSize();
+	}
 };
 
 Board.prototype.getPlaceByXY = function(x, y) {
@@ -208,7 +249,7 @@ myGoApp.controller('goBoardCtrl', function($scope) {
 		$scope.debugPlace = place;
 	};
 	$scope.places = board.places; //shortcut
-	$scope.hoveredPlace = null;
+	$scope.hoveredPlace = null; //TODO: change to = false?
 	
 	$scope.alert = function(s) {alert(s)};
 });

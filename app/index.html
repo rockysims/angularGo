@@ -114,9 +114,31 @@
 			left: 16px;
 			top: 23px;
 			width: 30px;
-			font-size: 16pt;
 			text-align: center;
+			font-size: 0pt;
+			margin-top: 3px;
+		}
+		
+		div.place .w {
+			color: black;
+		}
+		div.place .b {
+			color: white;
+		}
+		
+		div.place .liberties1 {
+			font-size: 16pt;
+			margin-top: 0px;
 			color: red;
+		}
+		div.place .liberties2 {
+			font-size: 12pt;
+			margin-top: 0px;
+			color: orange;
+		}
+		div.place .liberties3 {
+			font-size: 8pt;
+			margin-top: 4px;
 		}
 		
 		.stone {
@@ -132,8 +154,11 @@
 			ng-repeat="(i, place) in places" 
 			ng-click="placeStone(place);"
 			ng-hover="board.hoveredPlace = place;">
-			<img class="stone" ng-src="img/{{place.color}}Stone.png" />
-			<div class="liberties" ng-hide="place.group.liberties.length == 0">
+			<img class="stone" 
+				style="width:{{place.size}}px; height:{{place.size}}px; 
+				margin-top:{{((place.group.liberties.length < 7)?19 - place.group.liberties.length*3:19 - 7*3)}}px;"
+				ng-src="img/{{place.color}}Stone.png" />
+			<div class="liberties liberties{{place.group.liberties.length}} {{place.color}}" ng-hide="place.group.liberties.length == 0">
 					{{place.group.liberties.length}}
 			</div>
 		</div>
@@ -146,6 +171,8 @@
 			Black captured: {{board.prisoners['w']}}<br/>
 			White captured: {{board.prisoners['b']}}<br/>
 		</div>
+		
+		x{{((board.places[0].group.liberties.length < 7)?19 - board.places[0].group.liberties.length*3:19 - 7*3)}}
 		
 		<div id="debug" style="display:block;">
 			stones: {{debugPlace.group.stones.length}}<br/>
