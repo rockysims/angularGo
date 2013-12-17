@@ -46,6 +46,10 @@ mark potential, false, and complete eyes
 mark cutting points and protected points like tiger's mouth
 mark forcing moves
 onHover, show change in liberties, enemy liberties removed, territory gained (range)?
+maybe show group's theoretical liberty (as if virtual connections were resolved)
+for each place, add 30% opacity background (above board and below stone) where how black/white it is shows influence
+	influence calculated as if each group emits up to 4 empty spaces away (black and white light cancel out)
+		100% of liberties for closest empty space and 25% for 4th empty space away
 */
 
 var EMPTY = "e";
