@@ -33,7 +33,7 @@ var arrayMerge = function(a1, a2) {
 /* Go game logic */
 
 /* TODO
-map liberties to size of stone image
+instead of mapping liberties to stone size add red glow with css around stones with low liberties
 onHover, display 50% opacity stone
 ko rule
 suicide rule
@@ -66,6 +66,7 @@ var Place = function(x, y) {
 	this.size = 45; //used as width and height in pixels
 };
 
+/*
 Place.prototype.refreshSize = function() {
 	var liberties = this.group.liberties.length;
 	var mapLibToSize = [];
@@ -81,6 +82,7 @@ Place.prototype.refreshSize = function() {
 	
 	this.size = mapLibToSize[liberties];
 };
+*/
 
 //Group wraps an array of places
 var nextGroupId = 0;
@@ -167,12 +169,14 @@ Board.prototype.refreshGroups = function() {
 		}
 	}
 	
+	/*
 	//update stone sizes to match liberties
 	for (i in this.places) {
 		p = this.places[i];
 		if (p.color != EMPTY)
 			p.refreshSize();
 	}
+	//*/
 };
 
 Board.prototype.getPlaceByXY = function(x, y) {
