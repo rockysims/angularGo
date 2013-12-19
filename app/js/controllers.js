@@ -33,18 +33,19 @@ var arrayMerge = function(a1, a2) {
 /* Go game logic */
 
 /* TODO
-instead of mapping liberties to stone size add red glow with css around stones with low liberties
+move stack (board snapshots)
+	undo, redo buttons
 onHover, display 50% opacity stone
 ko rule
 suicide rule
-move stack (board snapshots)
-	undo, redo buttons
 
 
 Later:
-mark potential, false, and complete eyes
 mark cutting points and protected points like tiger's mouth
 mark forcing moves
+mark dead stones
+mark potential, false, and complete eyes
+outline living stones
 onHover, show change in liberties, enemy liberties removed, territory gained (range)?
 maybe show group's theoretical liberty (as if virtual connections were resolved)
 for each place, add 30% opacity background (above board and below stone) where how black/white it is shows influence
