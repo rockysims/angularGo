@@ -155,7 +155,7 @@ var Board = function(size) {
 	}
 };
 
-Board.prototype.refreshGroups = function() {
+Board.prototype.refresh = function() {
 	var i;
 	var p;
 	for (i in this.places) {
@@ -223,8 +223,7 @@ Board.prototype.placeStone = function(place) {
 			}
 		}
 		
-		//refresh groups
-		this.refreshGroups();
+		this.refresh();
 	}
 };
 
@@ -235,6 +234,10 @@ Board.prototype.pass = function() {
 
 Board.prototype.undo = function() {
 	alert('TODO: implement board.undo()');
+};
+
+Board.prototype.redo = function() {
+	alert('TODO: implement board.redo()');
 };
 /* Go game logic ^^ */
 

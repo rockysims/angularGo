@@ -180,7 +180,9 @@
 		</div>
 		
 		<div>
-			<input type="button" value="undo" ng-click="board.undo();" style="display:none;"></input>
+			<input type="button" value="pass" ng-click="board.pass();"></input>
+			<input type="button" value="undo" ng-click="board.undo();"></input>
+			<input type="button" value="redo" ng-click="board.redo();"></input>
 			<br/>
 			{{(board.getTurnColor()=='b')?'Black':'White'}} to play.<br/>
 			<br/>
