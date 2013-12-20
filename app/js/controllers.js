@@ -61,14 +61,16 @@ var WHITE = "w";
 var Place = function(x, y, board) {
 	this.x = x;
 	this.y = y;
+	this.board = board;
 	this.color = EMPTY;
 	this.group = new Group(this);
 	this.size = 45; //used as width and height in pixels
 };
 
-Place.prototype.getAdjacentPlaces = function(board) {
+Place.prototype.getAdjacentPlaces = function() {
 	var x = this.x;
 	var y = this.y;
+	var board = this.board;
 	var adjacents = [];
 	var a;
 	
@@ -85,32 +87,15 @@ Place.prototype.getAdjacentPlaces = function(board) {
 	return this.adjacents;
 };
 
-Place.prototype.clone = function(p) {
+Place.prototype.copyForNewBoard = function(p, board) {
 	this.x = p.x;
 	this.y = p.y;
 	this.color = p.color;
-	this.group = p.group.clone();
+	this.group = new Group(p);
 	this.size = p.size;
-};
-//TODO: add .clone() method to Group and Board
-
-/*
-Place.prototype.refreshSize = function() {
-	var liberties = this.group.liberties.length;
-	var mapLibToSize = [];
-	mapLibToSize[1] = 30;
-	mapLibToSize[2] = 35;
-	mapLibToSize[3] = 40;
-	mapLibToSize[4] = 45;
-	mapLibToSize[5] = 50;
-	mapLibToSize[6] = 55;
-	mapLibToSize[7] = 60;
-	if (liberties > 7) 
-		liberties = 7;
 	
-	this.size = mapLibToSize[liberties];
+	this.board = board;
 };
-*/
 
 //Group represents an array of places all of the same color
 var nextGroupId = 0;
@@ -149,24 +134,6 @@ var Group = function(place) {
 		};
 		checkAdjacentPlacesRecurs(place, this);
 	}
-};
-
-Group.prototype.clone = function(g) {
-	this.id = nextGroupId++;
-	this.liberties = arrayCopy(g.liberties);
-	this.color = place.color;
-	this.stones = (place != null)?[place]:[];
-	
-	
-	
-	
-	
-	
-	this.x = p.x;
-	this.y = p.y;
-	this.color = p.color;
-	this.group = p.group.clone();
-	this.size = 45;
 };
 //*/
 
