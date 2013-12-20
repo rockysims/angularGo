@@ -58,14 +58,41 @@ var BLACK = "b";
 var WHITE = "w";
 
 //wraps a place on the board which could have a stone
-var Place = function(x, y) {
+var Place = function(x, y, board) {
 	this.x = x;
 	this.y = y;
 	this.color = EMPTY;
 	this.group = new Group(this);
-	this.adjacentPlaces = []; //populated by Board constructor
 	this.size = 45; //used as width and height in pixels
 };
+
+Place.prototype.getAdjacentPlaces = function(board) {
+	var x = this.x;
+	var y = this.y;
+	var adjacents = [];
+	var a;
+	
+	//check for cached adjacents
+	if (this.adjacents != null)
+		return this.adjacents;
+	
+	if ( (a = board.getPlaceByXY(x+1, y)) != null ) adjacents.push(a);
+	if ( (a = board.getPlaceByXY(x-1, y)) != null ) adjacents.push(a);
+	if ( (a = board.getPlaceByXY(x, y+1)) != null ) adjacents.push(a);
+	if ( (a = board.getPlaceByXY(x, y-1)) != null ) adjacents.push(a);
+	
+	this.adjacents = adjacents;
+	return this.adjacents;
+};
+
+Place.prototype.clone = function(p) {
+	this.x = p.x;
+	this.y = p.y;
+	this.color = p.color;
+	this.group = p.group.clone();
+	this.size = p.size;
+};
+//TODO: add .clone() method to Group and Board
 
 /*
 Place.prototype.refreshSize = function() {
@@ -85,20 +112,22 @@ Place.prototype.refreshSize = function() {
 };
 */
 
-//Group wraps an array of places
+//Group represents an array of places all of the same color
 var nextGroupId = 0;
 var Group = function(place) {
-	this.id = nextGroupId++;
+	this.id = nextGroupId++; //a unique this.id seems to make it much easier for angular to test if two groups are equal
 	this.liberties = [];
 	this.color = place.color;
-	this.stones = (place != null)?[place]:[];
+	if (place == null)
+		alert("place == null in Group constructor");
+	this.stones = (place != null)?[place]:[]; //TODO: consider changing to = [place] without conditional
 	
 	if (this.color != EMPTY) {
 		//add adjacent stones/liberties to this group recursively
 		var checkAdjacentPlacesRecurs = function(center, group) {
 			var a, i;
-			for (i in center.adjacentPlaces) {
-				a = center.adjacentPlaces[i];
+			for (i in center.getAdjacentPlaces()) {
+				a = (center.getAdjacentPlaces())[i];
 				
 				if (group.stones.indexOf(a) == -1) {
 					//adjacent stone not already part of group
@@ -121,6 +150,24 @@ var Group = function(place) {
 		checkAdjacentPlacesRecurs(place, this);
 	}
 };
+
+Group.prototype.clone = function(g) {
+	this.id = nextGroupId++;
+	this.liberties = arrayCopy(g.liberties);
+	this.color = place.color;
+	this.stones = (place != null)?[place]:[];
+	
+	
+	
+	
+	
+	
+	this.x = p.x;
+	this.y = p.y;
+	this.color = p.color;
+	this.group = p.group.clone();
+	this.size = 45;
+};
 //*/
 
 var Board = function(size) {
@@ -137,20 +184,7 @@ var Board = function(size) {
 	var x, y;
 	for (x = 0; x < size; x++) {
 		for (y = 0; y < size; y++) {
-			places[y*size+x] = new Place(x, y);
-		}
-	}
-	
-	//fill places[].adjacents[] = the (usually) 4 adjacent places
-	for (var x = 0; x < size; x++) {
-		for (var y = 0; y < size; y++) {
-			var a, adjacents = [];
-			if ((a = this.getPlaceByXY(x+1, y)) != null) adjacents.push(a);
-			if ((a = this.getPlaceByXY(x-1, y)) != null) adjacents.push(a);
-			if ((a = this.getPlaceByXY(x, y+1)) != null) adjacents.push(a);
-			if ((a = this.getPlaceByXY(x, y-1)) != null) adjacents.push(a);
-			
-			this.getPlaceByXY(x, y).adjacentPlaces = adjacents;
+			places[y*size+x] = new Place(x, y, this);
 		}
 	}
 };
@@ -206,8 +240,8 @@ Board.prototype.placeStone = function(place) {
 		//capture stones?
 		var i;
 		var a;
-		for (i in place.adjacentPlaces) {
-			a = place.adjacentPlaces[i];
+		for (i in place.getAdjacentPlaces()) {
+			a = (place.getAdjacentPlaces())[i];
 			if (a.group.color != "e") {
 				a.group = new Group(a); //refresh group info about the adjacent stone a
 				if (a.group.liberties.length == 0) {
