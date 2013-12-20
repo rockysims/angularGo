@@ -22,9 +22,9 @@
 		var squareSize;
 		var size;
 		$(function() {
-			if (SC('[ng-controller=goBoardCtrl]') != undefined) {
-				size = SC('[ng-controller=goBoardCtrl]').size;
-				squareSize = SC('[ng-controller=goBoardCtrl]').squareSize;
+			if (SC('[ng-controller=goGameCtrl]') != undefined) {
+				size = SC('[ng-controller=goGameCtrl]').size;
+				squareSize = SC('[ng-controller=goGameCtrl]').squareSize;
 				
 				drawBoard();
 			}
@@ -164,12 +164,12 @@
 		}
 	</style>
 	
-	<div class="board" ng-controller="goBoardCtrl">
+	<div class="board" ng-controller="goGameCtrl">
 		<canvas id="canvas" width="{{size*squareSize}}px" height="{{size*squareSize}}px"></canvas>
 		<div class="place" style="left:{{place.x*squareSize+8}}px;top:{{place.y*squareSize+7}}px;"
-			ng-repeat="(i, place) in places" 
+			ng-repeat="(i, place) in getPlaces()" 
 			ng-click="placeStone(place);"
-			ng-hover="board.hoveredPlace = place;">
+			ng-hover="getBoard().hoveredPlace = place;">
 			<img class="stone dangerLevel{{place.group.liberties.length}}" 
 				style="width:{{place.size}}px; height:{{place.size}}px;"
 				unusedStyle="margin-top:{{((place.group.liberties.length < 7)?19 - place.group.liberties.length*3:19 - 7*3)}}px;"
@@ -180,9 +180,9 @@
 		</div>
 		
 		<div>
-			<input type="button" value="pass" ng-click="board.pass();"></input>
-			<input type="button" value="undo" ng-click="board.undo();"></input>
-			<input type="button" value="redo" ng-click="board.redo();"></input>
+			<input type="button" value="pass" ng-click="pass();"></input>
+			<input type="button" value="undo" ng-click="undo();"></input>
+			<input type="button" value="redo" ng-click="redo();"></input>
 			<br/>
 			{{(board.getTurnColor()=='b')?'Black':'White'}} to play.<br/>
 			<br/>
@@ -190,7 +190,7 @@
 			White captured: {{board.prisoners['b']}}<br/>
 		</div>
 		
-		x{{((board.places[0].group.liberties.length < 7)?19 - board.places[0].group.liberties.length*3:19 - 7*3)}}
+		board.id: {{game.board.id}}
 		
 		<div id="debug" style="display:block;">
 			stones: {{debugPlace.group.stones.length}}<br/>

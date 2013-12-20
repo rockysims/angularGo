@@ -87,16 +87,6 @@ Place.prototype.getAdjacentPlaces = function() {
 	return this.adjacents;
 };
 
-Place.prototype.copyForNewBoard = function(p, board) {
-	this.x = p.x;
-	this.y = p.y;
-	this.color = p.color;
-	this.group = new Group(p);
-	this.size = p.size;
-	
-	this.board = board;
-};
-
 //Group represents an array of places all of the same color
 var nextGroupId = 0;
 var Group = function(place) {
@@ -137,15 +127,19 @@ var Group = function(place) {
 };
 //*/
 
-var Board = function(size) {
+var nextBoardId = 0;
+var Board = function(size, parentBoard) {
+	this.id = nextBoardId++;
+	//alert("Board created with id: " + this.id);
 	this.size = size;
-	this.moves = ['emptyBoard'];
-	this.places = [];
-	var places = this.places;
-	
+	this.parentBoard = parentBoard;
+	this.turnCount = 0;
+	this.childBoard = null;
 	this.prisoners = [];
 	this.prisoners['b'] = 0;
 	this.prisoners['w'] = 0;
+	this.places = [];
+	var places = this.places;
 	
 	//fill places[] = new Place
 	var x, y;
@@ -154,6 +148,38 @@ var Board = function(size) {
 			places[y*size+x] = new Place(x, y, this);
 		}
 	}
+};
+
+Board.prototype.createChildBoard = function(supressGroupCreation) {
+	var b = new Board(this.size, this); //TODO: try using moveStack where each item is an array of place colors
+	this.childBoard = b;
+	b.turnCount = this.turnCount;
+	b.prisoners = this.prisoners;
+	b.places = [];
+	var size = this.size;
+	var places = b.places;
+	
+	//fill places[] = new Place() with .color preserved from this board
+	var x, y, p;
+	for (x = 0; x < size; x++) {
+		for (y = 0; y < size; y++) {
+			p = new Place(x, y, this);
+			p.color = this.places[y*size+x].color;
+			places[y*size+x] = p;
+		}
+	}
+	
+	if (!supressGroupCreation) {
+		//regenerate groups (now that all places are colored)
+		for (x = 0; x < size; x++) {
+			for (y = 0; y < size; y++) {
+				p = places[y*size+x];
+				p.group = new Group(p);
+			}
+		}
+	}
+	
+	return b;
 };
 
 Board.prototype.refresh = function() {
@@ -170,15 +196,6 @@ Board.prototype.refresh = function() {
 			p.group = new Group(p);
 		}
 	}
-	
-	/*
-	//update stone sizes to match liberties
-	for (i in this.places) {
-		p = this.places[i];
-		if (p.color != EMPTY)
-			p.refreshSize();
-	}
-	//*/
 };
 
 Board.prototype.getPlaceByXY = function(x, y) {
@@ -191,11 +208,10 @@ Board.prototype.getPlaceByXY = function(x, y) {
 };
 
 Board.prototype.getTurnColor = function() {
-	var moves = this.moves;
-	var isBlacksTurn = moves[moves.length - 1].indexOf("b") != 0;
-	return (isBlacksTurn)?"b":"w";
+	return (this.turnCount % 2 == 0)?"b":"w";
 };
 
+/*
 Board.prototype.placeStone = function(place) {
 	if (place.color == EMPTY) {
 		var color = this.getTurnColor();
@@ -210,7 +226,7 @@ Board.prototype.placeStone = function(place) {
 		for (i in place.getAdjacentPlaces()) {
 			a = (place.getAdjacentPlaces())[i];
 			if (a.group.color != "e") {
-				a.group = new Group(a); //refresh group info about the adjacent stone a
+				a.group = new Group(a); //refresh group info about the adjacent stone a and any other stones in the same group
 				if (a.group.liberties.length == 0) {
 					//capture(a.group);
 					var j;
@@ -227,6 +243,7 @@ Board.prototype.placeStone = function(place) {
 		this.refresh();
 	}
 };
+//*/
 
 Board.prototype.pass = function() {
 	var color = this.getTurnColor();
@@ -240,6 +257,48 @@ Board.prototype.undo = function() {
 Board.prototype.redo = function() {
 	alert('TODO: implement board.redo()');
 };
+
+Board.prototype.resolveCaptures = function(lastPlacePlayed) {
+	var place = lastPlacePlayed;
+	var adjacentPlaces = place.getAdjacentPlaces();
+	var i;
+	var a;
+	
+	for (i in adjacentPlaces) {
+		a = adjacentPlaces[i];
+		if (a.group.color != "e") {
+			a.group = new Group(a); //refresh group info about the adjacent stone a and any other stones in the same group
+			if (a.group.liberties.length == 0) {
+				//capture(a.group);
+				var j;
+				var p;
+				for (j in a.group.stones) {
+					p = a.group.stones[j];
+					this.prisoners[p.color]++;
+					p.color = "e";
+				}
+			}
+		}
+	}
+};
+
+var GoGame = function (size) {
+	this.board = new Board(size);
+};
+
+GoGame.prototype.placeStone = function(x, y) {
+	var color = this.board.getTurnColor();
+	this.board = this.board.createChildBoard(true); //true to supressGroupCreation for efficiency since board.refresh() will regenerate groups
+	var board = this.board;
+	var place = board.getPlaceByXY(x, y);
+	
+	if (place.color == EMPTY) {
+		place.color = color;
+		board.turnCount++;
+		board.resolveCaptures(place);
+	}
+	board.refresh();
+};
 /* Go game logic ^^ */
 
 /* Controllers */
@@ -250,6 +309,39 @@ myGoApp.controller('testCtrl', function($scope) {
 	$scope.test = 0;
 });
 
+myGoApp.controller('goGameCtrl', function($scope) {
+	var size = 13;
+	var squareSize = 60;
+	$scope.size = size;
+	$scope.squareSize = squareSize;
+	
+	$scope.game = new GoGame(size);
+	var game = $scope.game;
+	
+	$scope.placeStone = function(place) {
+		game.placeStone(place.x, place.y);
+		$scope.debugPlace = place;
+	};
+	$scope.getPlaces = function() {
+		return game.board.places;
+	};
+	$scope.getBoard = function() {
+		return game.board;
+	};
+	$scope.pass = function() {
+		game.board.pass();
+	}
+	$scope.undo = function() {
+		game.board.undo();
+	}
+	$scope.redo = function() {
+		game.board.redo();
+	}
+	
+	$scope.alert = function(s) {alert(s)};
+});
+
+/*
 myGoApp.controller('goBoardCtrl', function($scope) {
 	var size = 13;
 	var squareSize = 60;
@@ -258,7 +350,7 @@ myGoApp.controller('goBoardCtrl', function($scope) {
 	$scope.size = size;
 	$scope.squareSize = squareSize;
 	$scope.placeStone = function(place) {
-		board.placeStone(place);
+		board.placeStone(place.x, place.y);
 		$scope.debugPlace = place;
 	};
 	$scope.places = board.places; //shortcut
@@ -267,7 +359,7 @@ myGoApp.controller('goBoardCtrl', function($scope) {
 	$scope.alert = function(s) {alert(s)};
 });
 
-
+//*/
 
 
 
