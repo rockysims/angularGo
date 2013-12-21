@@ -172,7 +172,6 @@
 			ng-hover="getBoard().hoveredPlace = place;">
 			<img class="stone dangerLevel{{place.group.liberties.length}}" 
 				style="width:{{place.size}}px; height:{{place.size}}px;"
-				unusedStyle="margin-top:{{((place.group.liberties.length < 7)?19 - place.group.liberties.length*3:19 - 7*3)}}px;"
 				ng-src="img/{{place.color}}Stone.png" />
 			<div class="liberties liberties{{place.group.liberties.length}} {{place.color}}" ng-hide="place.group.liberties.length == 0">
 					{{place.group.liberties.length}}
@@ -189,11 +188,13 @@
 			Black captured: {{getBoard().prisoners['w']}}<br/>
 			White captured: {{getBoard().prisoners['b']}}<br/>
 		</div>
-		<br/>
-		<br/>
+		<br/><br/><br/><br/><br/>
+		<br/><br/><br/><br/><br/>
 		<div id="debug" style="display:block;">
 			<u>Debug</u><br/>
-			koPlace: {{game.board.koPlace.x + ', ' + game.board.koPlace.y}}<br/>
+			board.state.id: {{game.board.state.id}}<br/>
+			game.board.state.koPlaceCoords: {{game.board.state.koPlaceCoords}}<br/>
+			board.koPlace: {{game.board.koPlace.x + ', ' + game.board.koPlace.y}}<br/>
 			stones: {{debugPlace.group.stones.length}}<br/>
 			groupId: {{debugPlace.group.id}}<br/>
 			x: {{debugPlace.x}}<br/>

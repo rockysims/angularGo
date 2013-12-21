@@ -93,9 +93,7 @@ var Group = function(place) {
 	this.id = nextGroupId++; //a unique this.id seems to make it much easier for angular to test if two groups are equal
 	this.liberties = [];
 	this.color = place.color;
-	if (place == null)
-		alert("place == null in Group constructor");
-	this.stones = (place != null)?[place]:[]; //TODO: consider changing to = [place] without conditional
+	this.stones = [place];
 	
 	if (this.color != EMPTY) {
 		//add adjacent stones/liberties to this group recursively
@@ -149,7 +147,8 @@ var Board = function(size) {
 		}
 	}
 	
-	this.history.push(this.getState());
+	this.state = this.getState();
+	this.history.push(this.state);
 };
 
 Board.prototype.refresh = function() {
@@ -194,10 +193,10 @@ Board.prototype.isValidMove = function(place) {
 	var captures = 0;
 	var friendlySupport = false;
 	for (i in adjacentPlaces) {
-		a = adjacentPlaces[i];
+		a = adjacentPlaces[i]; //----------------------------------------------																	--------
 		if (a.color == EMPTY)
 			liberties++;
-		else if (a.color != place.color) { //enemy stone
+		else if (a.color != this.getTurnColor()) { //enemy stone
 			if (a.group.liberties.length == 1) {
 				captures++;
 			}
@@ -234,8 +233,6 @@ Board.prototype.placeStone = function(x, y) {
 		place.color = color;
 		this.turnCount++;
 		capturedPlaces = this.resolveCaptures(place);
-		this.history.push(this.getState());
-		this.future = [];
 		
 		this.refresh();
 		
@@ -246,12 +243,18 @@ Board.prototype.placeStone = function(x, y) {
 		} else {
 			this.koPlace = null;
 		}
+		
+		this.history.push(this.getState());
+		this.future = [];
 	}
 };
 
+var nextBoardStateId = 0;
 Board.prototype.getState = function() {
 	var size = this.size;
 	var state = {};
+	state.id = nextBoardStateId++;
+	this.state = state;
 	state.turnCount = this.turnCount;
 	state.prisoners = [];
 	state.prisoners['b'] = this.prisoners['b'];
@@ -276,6 +279,8 @@ Board.prototype.setState = function(state) {
 	this.turnCount = state.turnCount;
 	this.prisoners = state.prisoners;
 	this.koPlace = (state.koPlaceCoords == null)?null:this.getPlaceByXY(state.koPlaceCoords[0], state.koPlaceCoords[1]);
+	
+	this.state = state; //for debugging
 	
 	//set color of all this.places[]
 	var x, y, p;
