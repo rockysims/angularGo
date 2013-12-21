@@ -137,6 +137,7 @@ var Board = function(size) {
 	this.prisoners = [];
 	this.prisoners['b'] = 0;
 	this.prisoners['w'] = 0;
+	this.koPlace = null;
 	this.places = [];
 	var places = this.places;
 	
@@ -209,7 +210,17 @@ Board.prototype.isValidMove = function(place) {
 		return false;
 	
 	//ko rule
+	if (place == this.koPlace)
+		return false;
+	
+	
 	//TODO: implement
+	/*
+	onPlaceStone, if (captured a single stone && placedStone has exactly 1 stone and exactly 1 liberty), koPlace = capturedStonePlace
+	else koPlace = null
+	
+	keep koPlace =
+	*/
 	
 	return true;
 };
@@ -217,16 +228,25 @@ Board.prototype.isValidMove = function(place) {
 Board.prototype.placeStone = function(x, y) {
 	var color = this.getTurnColor();
 	var place = this.getPlaceByXY(x, y);
+	var capturedPlaces = [];
 	
 	if (this.isValidMove(place)) {
 		place.color = color;
 		this.turnCount++;
-		this.resolveCaptures(place);
+		capturedPlaces = this.resolveCaptures(place);
 		this.history.push(this.getState());
 		this.future = [];
+		
+		this.refresh();
+		
+		//update this.koPlace
+		//if (captured a single stone && placedStone has exactly 1 stone and exactly 1 liberty), koPlace = capturedStonePlace
+		if (capturedPlaces.length == 1 && place.group.stones.length == 1 && place.group.liberties.length == 1) {
+			this.koPlace = capturedPlaces[0];
+		} else {
+			this.koPlace = null;
+		}
 	}
-	
-	this.refresh();
 };
 
 Board.prototype.getState = function() {
@@ -236,6 +256,7 @@ Board.prototype.getState = function() {
 	state.prisoners = [];
 	state.prisoners['b'] = this.prisoners['b'];
 	state.prisoners['w'] = this.prisoners['w'];
+	state.koPlaceCoords = (this.koPlace == null)?null:[this.koPlace.x, this.koPlace.y];
 	
 	//get color of all this.places[]
 	state.placeColors = [];
@@ -254,6 +275,7 @@ Board.prototype.setState = function(state) {
 	var size = this.size;
 	this.turnCount = state.turnCount;
 	this.prisoners = state.prisoners;
+	this.koPlace = (state.koPlaceCoords == null)?null:this.getPlaceByXY(state.koPlaceCoords[0], state.koPlaceCoords[1]);
 	
 	//set color of all this.places[]
 	var x, y, p;
@@ -269,6 +291,7 @@ Board.prototype.setState = function(state) {
 
 Board.prototype.pass = function() {
 	this.turnCount++;
+	this.koPlace = null;
 	this.history.push(this.getState());
 };
 
@@ -291,6 +314,7 @@ Board.prototype.redo = function() {
 Board.prototype.resolveCaptures = function(lastPlacePlayed) {
 	var place = lastPlacePlayed;
 	var adjacentPlaces = place.getAdjacentPlaces();
+	var capturedPlaces = [];
 	var i;
 	var a;
 	
@@ -306,10 +330,13 @@ Board.prototype.resolveCaptures = function(lastPlacePlayed) {
 					p = a.group.stones[j];
 					this.prisoners[p.color]++;
 					p.color = "e";
+					capturedPlaces.push(p);
 				}
 			}
 		}
 	}
+	
+	return capturedPlaces;
 };
 
 var GoGame = function (size) {
