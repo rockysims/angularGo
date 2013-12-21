@@ -180,18 +180,52 @@ Board.prototype.getTurnColor = function() {
 	return (this.turnCount % 2 == 0)?"b":"w";
 };
 
+Board.prototype.isValidMove = function(place) {
+	var a, i;
+	var adjacentPlaces = place.getAdjacentPlaces();
+	
+	//can only play on empty places
+	if (place.color != EMPTY)
+		return false;
+	
+	//no suicide
+	var liberties = 0;
+	var captures = 0;
+	var friendlySupport = false;
+	for (i in adjacentPlaces) {
+		a = adjacentPlaces[i];
+		if (a.color == EMPTY)
+			liberties++;
+		else if (a.color != place.color) { //enemy stone
+			if (a.group.liberties.length == 1) {
+				captures++;
+			}
+		} else { //friendly stone
+			if (a.group.liberties.length > 1) // > 1 not > 0 because move will fill in one of a.group's liberties
+				friendlySupport = true;
+		}
+	}
+	if (!friendlySupport && liberties == 0 && captures == 0)
+		return false;
+	
+	//ko rule
+	//TODO: implement
+	
+	return true;
+};
+
 Board.prototype.placeStone = function(x, y) {
 	var color = this.getTurnColor();
 	var place = this.getPlaceByXY(x, y);
 	
-	var validMove = place.color == EMPTY;
-	if (validMove) {
+	if (this.isValidMove(place)) {
 		place.color = color;
 		this.turnCount++;
 		this.resolveCaptures(place);
 		this.history.push(this.getState());
 		this.future = [];
 	}
+	
 	this.refresh();
 };
 
