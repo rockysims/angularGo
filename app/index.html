@@ -184,15 +184,15 @@
 			<input type="button" value="undo" ng-click="undo();"></input>
 			<input type="button" value="redo" ng-click="redo();"></input>
 			<br/>
-			{{(board.getTurnColor()=='b')?'Black':'White'}} to play.<br/>
+			{{(getBoard().getTurnColor()=='b')?'Black':'White'}} to play.<br/>
 			<br/>
-			Black captured: {{board.prisoners['w']}}<br/>
-			White captured: {{board.prisoners['b']}}<br/>
+			Black captured: {{getBoard().prisoners['w']}}<br/>
+			White captured: {{getBoard().prisoners['b']}}<br/>
 		</div>
-		
-		board.id: {{game.board.id}}
-		
+		<br/>
+		<br/>
 		<div id="debug" style="display:block;">
+			<u>Debug</u><br/>
 			stones: {{debugPlace.group.stones.length}}<br/>
 			groupId: {{debugPlace.group.id}}<br/>
 			x: {{debugPlace.x}}<br/>

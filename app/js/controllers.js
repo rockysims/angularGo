@@ -128,13 +128,12 @@ var Group = function(place) {
 //*/
 
 var nextBoardId = 0;
-var Board = function(size, parentBoard) {
+var Board = function(size) {
 	this.id = nextBoardId++;
-	//alert("Board created with id: " + this.id);
 	this.size = size;
-	this.parentBoard = parentBoard;
 	this.turnCount = 0;
-	this.childBoard = null;
+	this.history = [];
+	this.future = [];
 	this.prisoners = [];
 	this.prisoners['b'] = 0;
 	this.prisoners['w'] = 0;
@@ -148,38 +147,8 @@ var Board = function(size, parentBoard) {
 			places[y*size+x] = new Place(x, y, this);
 		}
 	}
-};
-
-Board.prototype.createChildBoard = function(supressGroupCreation) {
-	var b = new Board(this.size, this); //TODO: try using moveStack where each item is an array of place colors
-	this.childBoard = b;
-	b.turnCount = this.turnCount;
-	b.prisoners = this.prisoners;
-	b.places = [];
-	var size = this.size;
-	var places = b.places;
 	
-	//fill places[] = new Place() with .color preserved from this board
-	var x, y, p;
-	for (x = 0; x < size; x++) {
-		for (y = 0; y < size; y++) {
-			p = new Place(x, y, this);
-			p.color = this.places[y*size+x].color;
-			places[y*size+x] = p;
-		}
-	}
-	
-	if (!supressGroupCreation) {
-		//regenerate groups (now that all places are colored)
-		for (x = 0; x < size; x++) {
-			for (y = 0; y < size; y++) {
-				p = places[y*size+x];
-				p.group = new Group(p);
-			}
-		}
-	}
-	
-	return b;
+	this.history.push(this.getState());
 };
 
 Board.prototype.refresh = function() {
@@ -211,51 +180,78 @@ Board.prototype.getTurnColor = function() {
 	return (this.turnCount % 2 == 0)?"b":"w";
 };
 
-/*
-Board.prototype.placeStone = function(place) {
-	if (place.color == EMPTY) {
-		var color = this.getTurnColor();
-		
+Board.prototype.placeStone = function(x, y) {
+	var color = this.getTurnColor();
+	var place = this.getPlaceByXY(x, y);
+	
+	var validMove = place.color == EMPTY;
+	if (validMove) {
 		place.color = color;
-		
-		this.moves.push(color + place.x + "," + place.y);
-		
-		//capture stones?
-		var i;
-		var a;
-		for (i in place.getAdjacentPlaces()) {
-			a = (place.getAdjacentPlaces())[i];
-			if (a.group.color != "e") {
-				a.group = new Group(a); //refresh group info about the adjacent stone a and any other stones in the same group
-				if (a.group.liberties.length == 0) {
-					//capture(a.group);
-					var j;
-					var p;
-					for (j in a.group.stones) {
-						p = a.group.stones[j];
-						this.prisoners[p.color]++;
-						p.color = "e";
-					}
-				}
-			}
-		}
-		
-		this.refresh();
+		this.turnCount++;
+		this.resolveCaptures(place);
+		this.history.push(this.getState());
+		this.future = [];
 	}
+	this.refresh();
 };
-//*/
+
+Board.prototype.getState = function() {
+	var size = this.size;
+	var state = {};
+	state.turnCount = this.turnCount;
+	state.prisoners = [];
+	state.prisoners['b'] = this.prisoners['b'];
+	state.prisoners['w'] = this.prisoners['w'];
+	
+	//get color of all this.places[]
+	state.placeColors = [];
+	var x, y, p;
+	for (x = 0; x < size; x++) {
+		for (y = 0; y < size; y++) {
+			p = this.places[y*size+x];
+			state.placeColors[y*size+x] = p.color;
+		}
+	}
+	
+	return state;
+};
+
+Board.prototype.setState = function(state) {
+	var size = this.size;
+	this.turnCount = state.turnCount;
+	this.prisoners = state.prisoners;
+	
+	//set color of all this.places[]
+	var x, y, p;
+	for (x = 0; x < size; x++) {
+		for (y = 0; y < size; y++) {
+			p = this.places[y*size+x];
+			p.color = state.placeColors[y*size+x];
+		}
+	}
+	
+	this.refresh();
+};
 
 Board.prototype.pass = function() {
-	var color = this.getTurnColor();
-	this.moves.push(color + "Pass");
+	this.turnCount++;
+	this.history.push(this.getState());
 };
 
 Board.prototype.undo = function() {
-	alert('TODO: implement board.undo()');
+	if (this.history.length > 1) { //the first item in this.history is a blank board so no need to undo from there
+		this.future.push(this.history.pop());
+		var state = this.history[this.history.length-1];
+		this.setState(state);
+	}
 };
 
 Board.prototype.redo = function() {
-	alert('TODO: implement board.redo()');
+	if (this.future.length > 0) {
+		this.history.push(this.future.pop());
+		var state = this.history[this.history.length-1];
+		this.setState(state);
+	}
 };
 
 Board.prototype.resolveCaptures = function(lastPlacePlayed) {
@@ -267,7 +263,7 @@ Board.prototype.resolveCaptures = function(lastPlacePlayed) {
 	for (i in adjacentPlaces) {
 		a = adjacentPlaces[i];
 		if (a.group.color != "e") {
-			a.group = new Group(a); //refresh group info about the adjacent stone a and any other stones in the same group
+			a.group = new Group(a); //refreshes group info about the adjacent stone a and any other stones in the same group
 			if (a.group.liberties.length == 0) {
 				//capture(a.group);
 				var j;
@@ -287,17 +283,7 @@ var GoGame = function (size) {
 };
 
 GoGame.prototype.placeStone = function(x, y) {
-	var color = this.board.getTurnColor();
-	this.board = this.board.createChildBoard(true); //true to supressGroupCreation for efficiency since board.refresh() will regenerate groups
-	var board = this.board;
-	var place = board.getPlaceByXY(x, y);
-	
-	if (place.color == EMPTY) {
-		place.color = color;
-		board.turnCount++;
-		board.resolveCaptures(place);
-	}
-	board.refresh();
+	this.board.placeStone(x, y);
 };
 /* Go game logic ^^ */
 
