@@ -172,9 +172,9 @@
 			ng-hover="getBoard().hoveredPlace = place;">
 			<img class="stone dangerLevel{{place.group.liberties.length}}" 
 				style="width:{{place.size}}px; height:{{place.size}}px;"
-				ng-src="img/{{place.color}}Stone.png" />
+				ng-src="img/{{(getBoard().koPlace == place)?'koPlace':place.color+'Stone'}}.png" />
 			<div class="liberties liberties{{place.group.liberties.length}} {{place.color}}" ng-hide="place.group.liberties.length == 0">
-					{{place.group.liberties.length}}
+				{{place.group.liberties.length}}
 			</div>
 		</div>
 		
