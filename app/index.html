@@ -162,15 +162,20 @@
 			height: 45px;
 			margin-top: 8px;
 		}
+		
+		.stone.dead {
+			opacity:0.5;
+			filter:alpha(opacity=50); /* For IE8 and earlier */
+		}
 	</style>
 	
 	<div class="board" ng-controller="goGameCtrl">
 		<canvas id="canvas" width="{{size*squareSize}}px" height="{{size*squareSize}}px"></canvas>
 		<div class="place" style="left:{{place.x*squareSize+8}}px;top:{{place.y*squareSize+7}}px;"
 			ng-repeat="(i, place) in getPlaces()" 
-			ng-click="placeStone(place);"
+			ng-click="onClickPlace(place);"
 			ng-hover="getBoard().hoveredPlace = place;">
-			<img class="stone dangerLevel{{place.group.liberties.length}}" 
+			<img class="stone dangerLevel{{(getBoard().isInScoringMode())?0:place.group.liberties.length}} {{(place.markedAsDead)?'dead':''}}" 
 				style="width:{{place.size}}px; height:{{place.size}}px;"
 				ng-src="img/{{(getBoard().koPlace == place)?'koPlace':place.color+'Stone'}}.png" />
 			<div class="liberties liberties{{place.group.liberties.length}} {{place.color}}" ng-hide="place.group.liberties.length == 0">
@@ -183,10 +188,32 @@
 			<input type="button" value="undo" ng-click="undo();"></input>
 			<input type="button" value="redo" ng-click="redo();"></input>
 			<br/>
-			{{(getBoard().getTurnColor()=='b')?'Black':'White'}} to play.<br/>
+			<span ng-hide="getBoard().isInScoringMode()">
+				{{(getBoard().getTurnColor()=='b')?'Black':'White'}} to play.<br/>
+			</span>
+			<span ng-hide="!getBoard().isInScoringMode()">
+				Click groups to mark them as dead.<br/>
+			</span>
 			<br/>
 			Black captured: {{getBoard().prisoners['w']}}<br/>
 			White captured: {{getBoard().prisoners['b']}}<br/>
+			<br/>
+			<div ng-hide="!getBoard().isInScoringMode()">
+				<u>Score</u>:<br/>
+				<br/>
+				<b>Black</b>:<br/>
+				Territory: {{getScore().black.territory}}<br/>
+				Captured: {{getScore().black.captured}}<br/>
+				Total: {{getScore().black.total}}<br/>
+				<br/>
+				<b>White</b>:<br/>
+				Territory: {{getScore().white.territory}}<br/>
+				Captured: {{getScore().white.captured}}<br/>
+				Total: {{getScore().white.total}}<br/>
+				<br/>
+				<b>Result</b>:<br/>
+				{{(getScore().black.total - getScore().white.total > 0)?"Black":"White"}} wins by {{getScore().result}} points.<br/>
+			</div>
 		</div>
 		<br/><br/><br/><br/><br/>
 		<br/><br/><br/><br/><br/>

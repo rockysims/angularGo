@@ -33,11 +33,13 @@ var arrayMerge = function(a1, a2) {
 /* Go game logic */
 
 /* TODO
-move stack (board snapshots)
-	undo, redo buttons
+add scoring (after both players pass back to back)
+	look for groups of empty places that only touch black xor white stones
+	click stones to toggle markedAsDead
+	undo button should undo last pass and exit scoring mode
 onHover, display 50% opacity stone
-ko rule
-suicide rule
+	set board.consideredPlace = hoveredPlace
+
 
 
 Later:
@@ -46,9 +48,9 @@ mark forcing moves
 mark dead stones
 mark potential, false, and complete eyes
 outline living stones
-onHover, show change in liberties, enemy liberties removed, territory gained (range)?
+onHover, show change in liberties, enemy liberties removed, territory gained (as range)?
 maybe show group's theoretical liberty (as if virtual connections were resolved)
-for each place, add 30% opacity background (above board and below stone) where how black/white it is shows influence
+for each place, add 30% opacity background (above board and below stone) where how black or white it is shows influence
 	influence calculated as if each group emits up to 4 empty spaces away (black and white light cancel out)
 		100% of liberties for closest empty space and 25% for 4th empty space away
 */
@@ -64,6 +66,7 @@ var Place = function(x, y, board) {
 	this.board = board;
 	this.color = EMPTY;
 	this.group = new Group(this);
+	this.markedAsDead = false;
 	this.size = 45; //used as width and height in pixels
 };
 
@@ -136,6 +139,7 @@ var Board = function(size) {
 	this.prisoners['b'] = 0;
 	this.prisoners['w'] = 0;
 	this.koPlace = null;
+	this.playedPlace = null;
 	this.places = [];
 	var places = this.places;
 	
@@ -193,7 +197,7 @@ Board.prototype.isValidMove = function(place) {
 	var captures = 0;
 	var friendlySupport = false;
 	for (i in adjacentPlaces) {
-		a = adjacentPlaces[i]; //----------------------------------------------																	--------
+		a = adjacentPlaces[i];
 		if (a.color == EMPTY)
 			liberties++;
 		else if (a.color != this.getTurnColor()) { //enemy stone
@@ -211,15 +215,6 @@ Board.prototype.isValidMove = function(place) {
 	//ko rule
 	if (place == this.koPlace)
 		return false;
-	
-	
-	//TODO: implement
-	/*
-	onPlaceStone, if (captured a single stone && placedStone has exactly 1 stone and exactly 1 liberty), koPlace = capturedStonePlace
-	else koPlace = null
-	
-	keep koPlace =
-	*/
 	
 	return true;
 };
@@ -244,6 +239,8 @@ Board.prototype.placeStone = function(x, y) {
 			this.koPlace = null;
 		}
 		
+		this.playedPlace = place;
+		
 		this.history.push(this.getState());
 		this.future = [];
 	}
@@ -260,6 +257,7 @@ Board.prototype.getState = function() {
 	state.prisoners['b'] = this.prisoners['b'];
 	state.prisoners['w'] = this.prisoners['w'];
 	state.koPlaceCoords = (this.koPlace == null)?null:[this.koPlace.x, this.koPlace.y];
+	state.playedPlaceCoords = (this.playedPlace == null)?null:[this.playedPlace.x, this.playedPlace.y];
 	
 	//get color of all this.places[]
 	state.placeColors = [];
@@ -279,6 +277,7 @@ Board.prototype.setState = function(state) {
 	this.turnCount = state.turnCount;
 	this.prisoners = state.prisoners;
 	this.koPlace = (state.koPlaceCoords == null)?null:this.getPlaceByXY(state.koPlaceCoords[0], state.koPlaceCoords[1]);
+	this.playedPlace = (state.playedPlaceCoords == null)?null:this.getPlaceByXY(state.playedPlaceCoords[0], state.playedPlaceCoords[1]);
 	
 	this.state = state; //for debugging
 	
@@ -295,13 +294,25 @@ Board.prototype.setState = function(state) {
 };
 
 Board.prototype.pass = function() {
-	this.turnCount++;
-	this.koPlace = null;
-	this.history.push(this.getState());
+	if (!this.isInScoringMode()) {
+		this.turnCount++;
+		this.koPlace = null;
+		this.playedPlace = null;
+		this.history.push(this.getState());
+	}
 };
 
 Board.prototype.undo = function() {
-	if (this.history.length > 1) { //the first item in this.history is a blank board so no need to undo from there
+	if (this.isInScoringMode()) {
+		//undoing out of scoring mode so mark all stones as alive
+		var i, p;
+		for (i in this.places) {
+			p = this.places[i];
+			p.markedAsDead = false;
+		}
+	}
+	
+	if (this.history.length > 1) { //the first item in this.history is a blank board so no need to undo past there
 		this.future.push(this.history.pop());
 		var state = this.history[this.history.length-1];
 		this.setState(state);
@@ -325,7 +336,7 @@ Board.prototype.resolveCaptures = function(lastPlacePlayed) {
 	
 	for (i in adjacentPlaces) {
 		a = adjacentPlaces[i];
-		if (a.group.color != "e") {
+		if (a.group.color != "e" && a.group.color != lastPlacePlayed.color) {
 			a.group = new Group(a); //refreshes group info about the adjacent stone a and any other stones in the same group
 			if (a.group.liberties.length == 0) {
 				//capture(a.group);
@@ -344,12 +355,84 @@ Board.prototype.resolveCaptures = function(lastPlacePlayed) {
 	return capturedPlaces;
 };
 
+Board.prototype.isInScoringMode = function() {
+	if (this.history.length < 2)
+		return false;
+	var last = this.history.length - 1;
+	var moveZ = this.history[last];
+	var moveY = this.history[last-1];
+	
+	//return (last 2 moves were passing moves)
+	return moveZ.playedPlaceCoords == null && moveY.playedPlaceCoords == null;
+};
+
+Board.prototype.toggleMarkedAsDead = function(x, y) {
+	//make sure .group for each place is fresh
+	if (!this.refreshedAlready) {
+		this.refresh();
+		this.refreshedAlready = true;
+	}
+	
+	var place = this.getPlaceByXY(x, y);
+	var mark = !place.markedAsDead;
+	
+	var i, p;
+	for (i in place.group.stones) {
+		p = place.group.stones[i];
+		p.markedAsDead = mark;
+	}
+};
+
 var GoGame = function (size) {
 	this.board = new Board(size);
 };
 
-GoGame.prototype.placeStone = function(x, y) {
-	this.board.placeStone(x, y);
+GoGame.prototype.onClickPlace = function(x, y) {
+	if (this.board.isInScoringMode()) {
+		this.board.toggleMarkedAsDead(x, y);
+	} else
+		this.board.placeStone(x, y);
+};
+
+GoGame.prototype.getScore = function() {
+	/*
+	<u>Score</u>:<br/>
+	<br/>
+	<b>Black</b>:<br/>
+	Territory: {{score.black.territory}}<br/>
+	Captured: {{score.black.captured}}<br/>
+	Total: {{score.black.total}}<br/>
+	<br/>
+	<b>White</b>:<br/>
+	Territory: {{score.white.territory}}<br/>
+	Captured: {{score.white.captured}}<br/>
+	Total: {{score.white.total}}<br/>
+	<br/>
+	<b>Result</b>:<br/>
+	{{(score.black.total - score.white.total > 0)?"Black":"White"}} wins by {{Math.abs(score.black.total - score.white.total)}} points.<br/>
+	*/
+	
+	
+	
+	var score = {
+		'black': {
+			'territory': 10,
+			'captured': 20
+		},
+		'white': {
+			'territory': 15,
+			'captured': 25
+		}
+	}
+	
+	//set totals
+	score.black.total = score.black.territory + score.black.captured;
+	score.white.total = score.white.territory + score.white.captured;
+	
+	//set result
+	score.result = Math.abs(score.black.total - score.white.total);
+	
+	return score;
 };
 /* Go game logic ^^ */
 
@@ -370,8 +453,9 @@ myGoApp.controller('goGameCtrl', function($scope) {
 	$scope.game = new GoGame(size);
 	var game = $scope.game;
 	
-	$scope.placeStone = function(place) {
-		game.placeStone(place.x, place.y);
+	$scope.onClickPlace = function(place) {
+		game.onClickPlace(place.x, place.y);
+		
 		$scope.debugPlace = place;
 	};
 	$scope.getPlaces = function() {
@@ -379,6 +463,12 @@ myGoApp.controller('goGameCtrl', function($scope) {
 	};
 	$scope.getBoard = function() {
 		return game.board;
+	};
+	$scope.getScore = function() {
+		if (game.board.isInScoringMode()) {
+			return game.getScore();
+		} else
+			return null
 	};
 	$scope.pass = function() {
 		game.board.pass();
