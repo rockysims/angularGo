@@ -202,17 +202,17 @@
 				<u>Score</u>:<br/>
 				<br/>
 				<b>Black</b>:<br/>
-				Territory: {{getScore().black.territory}}<br/>
-				Captured: {{getScore().black.captured}}<br/>
-				Total: {{getScore().black.total}}<br/>
+				Territory: {{getScore().b.territory}}<br/>
+				Captured: {{getScore().b.captured}}<br/>
+				Total: {{getScore().b.total}}<br/>
 				<br/>
 				<b>White</b>:<br/>
-				Territory: {{getScore().white.territory}}<br/>
-				Captured: {{getScore().white.captured}}<br/>
-				Total: {{getScore().white.total}}<br/>
+				Territory: {{getScore().w.territory}}<br/>
+				Captured: {{getScore().w.captured}}<br/>
+				Total: {{getScore().w.total}}<br/>
 				<br/>
 				<b>Result</b>:<br/>
-				{{(getScore().black.total - getScore().white.total > 0)?"Black":"White"}} wins by {{getScore().result}} points.<br/>
+				{{(getScore().b.total - getScore().w.total > 0)?"Black":"White"}} wins by {{getScore().result}} points.<br/>
 			</div>
 		</div>
 		<br/><br/><br/><br/><br/>

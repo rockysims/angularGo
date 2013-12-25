@@ -66,6 +66,7 @@ var Place = function(x, y, board) {
 	this.board = board;
 	this.color = EMPTY;
 	this.group = new Group(this);
+	this.territoryGroup = null;
 	this.markedAsDead = false;
 	this.size = 45; //used as width and height in pixels
 };
@@ -383,6 +384,59 @@ Board.prototype.toggleMarkedAsDead = function(x, y) {
 	}
 };
 
+var nextTerritoryGroupId = 0;
+var TerritoryGroup = function(place) {
+	this.id = nextTerritoryGroupId++; //a unique this.id seems to make it much easier for angular to test if two groups are equal
+	this.territory = 0;
+	this.captured = 0;
+	this.ownerColor = 'e';
+	
+	if (place.color != 'e')
+		alert("Error: new TerritoryGroup(place) where place.color != 'e'.");
+	
+	place.territoryGroup = this;
+	
+	//add adjacent territory / captured to this territory group recursively
+	var checkAdjacentPlacesRecurs = function(center, territoryGroup) {
+		var a, i;
+		for (i in center.getAdjacentPlaces()) {
+			a = (center.getAdjacentPlaces())[i];
+			
+			if (a.territoryGroup == null) {
+				//adjacent place not already processed
+				
+				if (a.color == 'e' || a.markedAsDead) {
+					territoryGroup.territory++;
+					if (a.markedAsDead)
+						territoryGroup.captured++;
+					
+					a.territoryGroup = territoryGroup;
+					checkAdjacentPlacesRecurs(a, territoryGroup);
+				} else { //a.color != 'e' && !a.markedAsDead
+					//figure out ownerColor
+					if (territoryGroup.ownerColor == 'c') {
+						//this territory is already known to be contested
+					} else if (territoryGroup.ownerColor == 'e') {
+						//no prior claim so give ownership to a.color
+						territoryGroup.ownerColor = a.color;
+					} else {
+						//ownership of this territory alreadly claimed so check that other player doesn't contest ownership
+						if (territoryGroup.ownerColor != a.color) {
+							//territory ownership is contested
+							territoryGroup.ownerColor = 'c';
+						}
+					}
+				}
+			}
+		}
+	};
+	checkAdjacentPlacesRecurs(place, this);
+	
+	//if territory is contested, assign ownership to no one
+	if (this.ownerColor == 'c')
+		this.ownerColor = 'e';
+};
+
 var GoGame = function (size) {
 	this.board = new Board(size);
 };
@@ -395,42 +449,55 @@ GoGame.prototype.onClickPlace = function(x, y) {
 };
 
 GoGame.prototype.getScore = function() {
-	/*
-	<u>Score</u>:<br/>
-	<br/>
-	<b>Black</b>:<br/>
-	Territory: {{score.black.territory}}<br/>
-	Captured: {{score.black.captured}}<br/>
-	Total: {{score.black.total}}<br/>
-	<br/>
-	<b>White</b>:<br/>
-	Territory: {{score.white.territory}}<br/>
-	Captured: {{score.white.captured}}<br/>
-	Total: {{score.white.total}}<br/>
-	<br/>
-	<b>Result</b>:<br/>
-	{{(score.black.total - score.white.total > 0)?"Black":"White"}} wins by {{Math.abs(score.black.total - score.white.total)}} points.<br/>
-	*/
+	var territoryGroups = [];
+	var i, p;
 	
-	
-	
+	//init score ignoring territory and dead (but not captured) stones
 	var score = {
-		'black': {
-			'territory': 10,
-			'captured': 20
+		'b': {
+			'territory': 0,
+			'captured': this.board.prisoners['w']
 		},
-		'white': {
-			'territory': 15,
-			'captured': 25
+		'w': {
+			'territory': 0,
+			'captured': this.board.prisoners['b']
+		}
+	};
+	
+	// Handle territory and dead stones
+	
+	//set territoryGroup = null for all places
+	for (i in this.board.places) {
+		p = this.board.places[i];
+		p.territoryGroup = null;
+	}
+	
+	//generate territoryGroups and count dead stones
+	for (i in this.board.places) {
+		p = this.board.places[i];
+		if (p.color == "e" && p.territoryGroup == null) {
+			territoryGroups.push(new TerritoryGroup(p));
 		}
 	}
 	
+	//add territory and dead stones to score
+	var t;
+	for (i in territoryGroups) {
+		t = territoryGroups[i];
+		if (t.ownerColor != 'e') {
+			score[t.ownerColor].territory += t.territory;
+			score[t.ownerColor].captured += t.captured;
+		}
+	}
+	
+	// Calculate totals and result
+	
 	//set totals
-	score.black.total = score.black.territory + score.black.captured;
-	score.white.total = score.white.territory + score.white.captured;
+	score.b.total = score.b.territory + score.b.captured;
+	score.w.total = score.w.territory + score.w.captured;
 	
 	//set result
-	score.result = Math.abs(score.black.total - score.white.total);
+	score.result = Math.abs(score.b.total - score.w.total);
 	
 	return score;
 };
@@ -483,25 +550,6 @@ myGoApp.controller('goGameCtrl', function($scope) {
 	$scope.alert = function(s) {alert(s)};
 });
 
-/*
-myGoApp.controller('goBoardCtrl', function($scope) {
-	var size = 13;
-	var squareSize = 60;
-	$scope.board = new Board(size);
-	var board = $scope.board;
-	$scope.size = size;
-	$scope.squareSize = squareSize;
-	$scope.placeStone = function(place) {
-		board.placeStone(place.x, place.y);
-		$scope.debugPlace = place;
-	};
-	$scope.places = board.places; //shortcut
-	$scope.hoveredPlace = null; //TODO: change to = false?
-	
-	$scope.alert = function(s) {alert(s)};
-});
-
-//*/
 
 
 
