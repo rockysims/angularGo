@@ -190,6 +190,9 @@
 			<br/>
 			<span ng-hide="getBoard().isInScoringMode()">
 				{{(getBoard().getTurnColor()=='b')?'Black':'White'}} to play.<br/>
+				<span ng-hide="getBoard().turnCount == 0">
+					({{(getBoard().getTurnColor()=='b')?'White':'Black'}} {{(getBoard().playedPlace != null)?"played "+getBoard().playedPlace.x+","+getBoard().playedPlace.y:"passed"}})
+				</span><br/>
 			</span>
 			<span ng-hide="!getBoard().isInScoringMode()">
 				Click groups to mark them as dead.<br/>
