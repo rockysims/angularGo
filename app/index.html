@@ -173,11 +173,19 @@
 		<canvas id="canvas" width="{{size*squareSize}}px" height="{{size*squareSize}}px"></canvas>
 		<div class="place" style="left:{{place.x*squareSize+8}}px;top:{{place.y*squareSize+7}}px;"
 			ng-repeat="(i, place) in getPlaces()" 
-			ng-click="onClickPlace(place);"
-			ng-hover="getBoard().hoveredPlace = place;">
-			<img class="stone dangerLevel{{(getBoard().isInScoringMode())?0:place.group.liberties.length}} {{(place.markedAsDead)?'dead':''}}" 
+			ng-click="onClickPlace(place);">
+			
+			<!--
+			<img class="stone dangerLevel{{(getBoard().isInScoringMode())?0:place.group.liberties.length}} {{(place.markedAsDead)?'dead':''}}"
 				style="width:{{place.size}}px; height:{{place.size}}px;"
+				ng-src="{{getPlaceImgPath(place)}}" />
+			
+			
+			
+			-->
+			<img class="stone dangerLevel{{(getBoard().isInScoringMode())?0:place.group.liberties.length}} {{(place.markedAsDead)?'dead':''}}"
 				ng-src="img/{{(getBoard().koPlace == place)?'koPlace':place.color+'Stone'}}.png" />
+			
 			<div class="liberties liberties{{place.group.liberties.length}} {{place.color}}" ng-hide="place.group.liberties.length == 0">
 				{{place.group.liberties.length}}
 			</div>

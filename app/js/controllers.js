@@ -33,10 +33,7 @@ var arrayMerge = function(a1, a2) {
 /* Go game logic */
 
 /* TODO
-add scoring (after both players pass back to back)
-	look for groups of empty places that only touch black xor white stones
-	click stones to toggle markedAsDead
-	undo button should undo last pass and exit scoring mode
+fix scoring bug where marking friendly stones in your territory as dead is allowed
 onHover, display 50% opacity stone
 	set board.consideredPlace = hoveredPlace
 
@@ -221,6 +218,12 @@ Board.prototype.isValidMove = function(place) {
 };
 
 Board.prototype.placeStone = function(x, y) {
+	//handle placeStone(place) constructor
+	if (y == null) {
+		y = x.y;
+		x = x.x;
+	}
+	
 	var color = this.getTurnColor();
 	var place = this.getPlaceByXY(x, y);
 	var capturedPlaces = [];
@@ -540,16 +543,60 @@ myGoApp.controller('goGameCtrl', function($scope) {
 	};
 	$scope.pass = function() {
 		game.board.pass();
-	}
+	};
 	$scope.undo = function() {
 		game.board.undo();
-	}
+	};
 	$scope.redo = function() {
 		game.board.redo();
-	}
+	};
+	
+	$scope.getPlaceImgPath = function(place) {
+		var path = "img/";
+		
+		if (!game.board.isInScoringMode()) {
+			if (game.board.koPlace == place)
+				path += 'koPlace';
+			else
+				path += place.color+'Stone';
+		} else {
+			if (place.color == 'e') {
+				path += place.territoryGroup.ownerColor+'Territory';
+			}
+		}
+	
+		path += ".png";
+		return path;
+	};
 	
 	$scope.alert = function(s) {alert(s)};
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

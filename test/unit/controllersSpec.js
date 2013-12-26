@@ -45,7 +45,9 @@ describe('Board', function() {
 	});
 	
 	it("has working stone placement", function() {
+		expect(board != null);
 		var place = board.getPlaceByXY(0, 0);
+		expect(place != null); 
 		board.placeStone(place);
 		expect(board.places[0].color).toBe("b");
 	});
@@ -69,8 +71,6 @@ describe('Board', function() {
 		expect(board.places[board.size*1+0].x).toBe(0);
 		expect(board.places[board.size*1+0].y).toBe(1);
 	});
-	
-	//it("correctly fills stones[]")
 	
 	it("correctly fills liberties[] for single stones", function() {
 		var place;
@@ -180,8 +180,7 @@ describe('Board', function() {
 		expect(center.color).toBe('e');
 	});
 	
-	/*
-	it("correctly fills liberties[] for 2 stones", function() {
+	it("for 2 touching friendly stones liberties.length is correct", function() {
 		var place;
 		place = board.getPlaceByXY(4, 4); //black
 		board.placeStone(place);
@@ -209,7 +208,7 @@ describe('Board', function() {
 		expect(p.x+","+p.y).toBe("4,3");
 	});
 	
-	it("correctly fills liberties[] for 3 stones in a row", function() {
+	it("for 3 touching friendly stones liberties.length is correct", function() {
 		return;
 		var place;
 		place = board.getPlaceByXY(4, 4); //black
@@ -241,6 +240,8 @@ describe('Board', function() {
 		p = liberties[5];
 		expect(p.x+","+p.y).toBe("4,3");
 	});
-	//*/
+	
+	/* TODO: Test Scoring */
+	
 });
 //*/
