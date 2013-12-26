@@ -394,6 +394,7 @@ var TerritoryGroup = function(place) {
 	if (place.color != 'e')
 		alert("Error: new TerritoryGroup(place) where place.color != 'e'.");
 	
+	this.territory++;
 	place.territoryGroup = this;
 	
 	//add adjacent territory / captured to this territory group recursively
