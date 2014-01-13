@@ -106,7 +106,9 @@
 			ng-click="onClickPlace(place);"
 			ng-mouseover="getBoard().consideredPlace = place;">
 			
-			<img class="considered stone" src="{{(getBoard().consideredPlace == place && getBoard().isValidMove(place))?'img/'+getBoard().getTurnColor()+'Stone.png':''}}" />
+			<img class="considered stone" 
+				src="{{(getBoard().consideredPlace == place && getBoard().isValidMove(place))?'img/'+getBoard().getTurnColor()+'Stone.png':''}}"
+				ng-hide="getBoard().isInScoringMode()" />
 			<img class="territory" src="{{getTerritoryImgPath(place)}}" ng-show="getBoard().isInScoringMode()" />
 			<img class="stone dangerLevel{{(getBoard().isInScoringMode())?0:place.group.liberties.length}} {{(place.markedAsDead)?'dead':''}}"
 				style="width:{{place.size}}px; height:{{place.size}}px;"
