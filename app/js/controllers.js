@@ -235,7 +235,7 @@ Board.prototype.placeStone = function(x, y) {
 		this.turnCount++;
 		capturedPlaces = this.resolveCaptures(place);
 		
-		this.clickSound.play();
+		//this.clickSound.play(); //TODO: find a better sound
 		
 		this.refresh();
 		
@@ -364,7 +364,7 @@ Board.prototype.resolveCaptures = function(lastPlacePlayed) {
 };
 
 Board.prototype.isInScoringMode = function() {
-	if (this.history.length < 2)
+	if (this.history.length < 3) //first state is blank board so after 2 moves is third state
 		return false;
 	var last = this.history.length - 1;
 	var moveZ = this.history[last];

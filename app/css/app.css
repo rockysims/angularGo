@@ -1,5 +1,9 @@
 /* app css stylesheet */
 
+.board {
+	padding: 20px;
+}
+
 div.place {
 	position: absolute;
 	border: 0px solid green;

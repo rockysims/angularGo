@@ -2,17 +2,27 @@
 <html lang="en" ng-app="myGoApp">
 <head>
 	<meta charset="utf-8">
-	<title>MyGo</title>
+	<title>Go</title>
 	<link rel="stylesheet" href="css/app.css"/>
-</head>
-<body>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- jQuery -->
 	<script src="js/jQuery.js"></script>
+	
+	<!-- Bootstrap -->
+	<script src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+	<link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+	<link href="http://netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.css" rel="stylesheet">
+	
+	<!-- AngularJS -->
 	<script src="lib/angular/angular.js"></script>
 	<script src="js/app.js"></script>
 	<script src="js/services.js"></script>
 	<script src="js/controllers.js"></script>
 	<script src="js/filters.js"></script>
 	<script src="js/directives.js"></script>
+</head>
+<body>
 	
 	<script type="text/javascript">
 		function SC(selector) {
@@ -101,7 +111,7 @@
 	
 	<div class="board" ng-controller="goGameCtrl" ng-mouseout="getBoard().consideredPlace = null;">
 		<canvas id="canvas" width="{{size*squareSize}}px" height="{{size*squareSize}}px"></canvas>
-		<div class="place" style="left:{{place.x*squareSize+8}}px;top:{{place.y*squareSize+7}}px;"
+		<div class="place" style="left:{{place.x*squareSize+20}}px;top:{{place.y*squareSize+20}}px;"
 			ng-repeat="(i, place) in getPlaces()" 
 			ng-click="onClickPlace(place);"
 			ng-mouseover="getBoard().consideredPlace = place;">
@@ -118,22 +128,24 @@
 				{{place.group.liberties.length}}
 			</div>
 		</div>
-		
-		<div>
-			<input type="button" value="pass" ng-click="pass();"></input>
-			<input type="button" value="undo" ng-click="undo();"></input>
-			<input type="button" value="redo" ng-click="redo();"></input>
+		<br/>
+		<br/>
+		<div class="well well-sm">
+			<a href="#" class="btn btn-inverse" ng-click="pass();">Pass</a>
+			<a href="#" class="btn btn-inverse" ng-click="undo();"><i class="icon-white icon-arrow-left"></i> Undo</a>
+			<a href="#" class="btn btn-inverse" ng-click="redo();">Redo <i class="icon-white icon-arrow-right"></i></a><br/>
 			<br/>
 			<span ng-hide="getBoard().isInScoringMode()">
-				{{(getBoard().getTurnColor()=='b')?'Black':'White'}} to play.<br/>
+				<b>{{(getBoard().getTurnColor()=='b')?'Black':'White'}} to play.</b><br/>
 				<span ng-hide="getBoard().turnCount == 0">
 					({{(getBoard().getTurnColor()=='b')?'White':'Black'}} {{(getBoard().playedPlace != null)?"played "+getBoard().playedPlace.x+","+getBoard().playedPlace.y:"passed"}})
-				</span><br/>
+				</span><br/><br/>
 			</span>
+			
 			<span ng-hide="!getBoard().isInScoringMode()">
-				Click groups to mark them as dead.<br/>
+				<b>Click groups to toggle marked as dead.</b><br/>
+				<br/>
 			</span>
-			<br/>
 			Black captured: {{getBoard().prisoners['w']}}<br/>
 			White captured: {{getBoard().prisoners['b']}}<br/>
 			<br/>
@@ -154,6 +166,7 @@
 				{{(getScore().b.total - getScore().w.total > 0)?"Black":"White"}} wins by {{getScore().result}} points.<br/>
 			</div>
 		</div>
+		<!--
 		<br/><br/><br/><br/><br/>
 		<br/><br/><br/><br/><br/>
 		<div id="debug" style="display:block;">
@@ -166,6 +179,7 @@
 			x: {{debugPlace.x}}<br/>
 			y: {{debugPlace.y}}<br/>
 		</div>
+		-->
 	</div>
 </body>
 </html>
