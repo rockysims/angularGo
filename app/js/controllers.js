@@ -363,6 +363,8 @@ Board.prototype.toggleMarkedAsDead = function(x, y) {
 // ===================================================================================================================================================================================
 
 
+//used for calculating the score
+//wraps a group composed of empty places and dead stones
 var nextTerritoryGroupId = 0;
 var TerritoryGroup = function(place) {
 	this.id = nextTerritoryGroupId++; //a unique this.id seems to make it much easier for angular to test if two groups are equal
@@ -495,12 +497,8 @@ GoGame.prototype.getScore = function() {
 
 var myGoApp = angular.module('myGoApp', []);
 
-myGoApp.controller('testCtrl', function($scope) {
-	$scope.test = 0;
-});
-
 myGoApp.controller('goGameCtrl', function($scope) {
-	var size = 9;
+	var size = 13;
 	var squareSize = 60;
 	$scope.size = size;
 	$scope.squareSize = squareSize;
@@ -508,16 +506,12 @@ myGoApp.controller('goGameCtrl', function($scope) {
 	$scope.game = new GoGame(size);
 	var game = $scope.game;
 	
+	$scope.board = game.board;
+	
 	$scope.onClickPlace = function(place) {
 		game.onClickPlace(place.x, place.y);
 		
 		$scope.debugPlace = place;
-	};
-	$scope.getPlaces = function() {
-		return game.board.places;
-	};
-	$scope.getBoard = function() {
-		return game.board;
 	};
 	$scope.getScore = function() {
 		if (game.board.isInScoringMode()) {
@@ -538,7 +532,7 @@ myGoApp.controller('goGameCtrl', function($scope) {
 	$scope.getTerritoryImgPath = function(place) {
 		var path;
 		
-		if (game.board.isInScoringMode()) {
+		if (game.board.isInScoringMode() && place.territoryGroup != null) {
 			path = "img/" + place.territoryGroup.ownerColor+'Territory.png';
 		} else
 			path = "";

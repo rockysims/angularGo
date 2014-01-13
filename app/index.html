@@ -109,21 +109,62 @@
 		}
 	</script>
 	
-	<div class="game" ng-controller="goGameCtrl" ng-mouseout="getBoard().consideredPlace = null;">
+	<!-- shows considered move when hovered over -->
+	<img id="consideredMoveImg" class="considered stone" src="img/eStone.png" style="display:none;" />
+	<script type="text/javascript">
+		//when the user hovers over a valid move, show semi-transparent stone of their color.
+		//written with jQuery instead of angularJS because less lag
+		$(function() {
+			var board = SC('[ng-controller=goGameCtrl]').board;
+			
+			$(".place").mouseover(function() {
+				var left = $(this).css("left");
+				var top = $(this).css("top");
+				//remove "px" from end of x and y and convert to numbers
+				left = 1*left.substr(0, left.length-2);
+				top = 1*top.substr(0, top.length-2);
+				//align image
+				left += 8;
+				top += 7;
+				
+				var img = $("#consideredMoveImg");
+				img.css("left", left + "px");
+				img.css("top", top + "px");
+				
+				var x = 1*$(this).attr("x");
+				var y = 1*$(this).attr("y");
+				var p = board.getPlaceByXY(x, y);
+				var color = "e";
+				if (board.isValidMove(p) && !board.isInScoringMode())
+					color = board.getTurnColor();
+				img.attr("src", "img/" + color + "Stone.png");
+				
+				img.show();
+			});
+			
+			$(".game").mouseout(function() {
+				var img = $("#consideredMoveImg");
+				img.hide();
+			});
+		});
+	</script>
+	
+	<div class="game" ng-controller="goGameCtrl" ng-mouseout="board.consideredPlace = null;">
 		
 		<!-- board and stones -->
 		<canvas id="canvas" width="{{size*squareSize}}px" height="{{size*squareSize}}px"></canvas>
-		<div class="place" style="left:{{place.x*squareSize+20}}px;top:{{place.y*squareSize+20}}px;"
-			ng-repeat="(i, place) in getPlaces()" 
+		<div class="place" x="{{place.x}}" y="{{place.y}}" style="left:{{place.x*squareSize+20}}px;top:{{place.y*squareSize+20}}px;"
+			ng-repeat="(i, place) in board.places" 
 			ng-click="onClickPlace(place);"
-			ng-mouseover="getBoard().consideredPlace = place;">
+			ng-mouseover="board.consideredPlace = place;">
 			
+			<!--
 			<img class="considered stone" 
-				src="{{(getBoard().consideredPlace == place && getBoard().isValidMove(place))?'img/'+getBoard().getTurnColor()+'Stone.png':''}}"
-				ng-hide="getBoard().isInScoringMode()" />
-			<img class="territory" src="{{getTerritoryImgPath(place)}}" ng-show="getBoard().isInScoringMode()" />
-			<img class="stone dangerLevel{{(getBoard().isInScoringMode())?0:place.group.liberties.length}} {{(place.markedAsDead)?'dead':''}}"
-				
+				src="{{(board.consideredPlace == place && board.isValidMove(place))?'img/'+board.getTurnColor()+'Stone.png':''}}"
+				ng-hide="board.isInScoringMode()" />
+			-->
+			<img class="territory" src="{{getTerritoryImgPath(place)}}" ng-show="board.isInScoringMode()" />
+			<img class="stone dangerLevel{{(board.isInScoringMode())?0:place.group.liberties.length}} {{(place.markedAsDead)?'dead':''}}"
 				ng-src="{{getPlaceImgPath(place)}}" />
 			
 			<div class="liberties liberties{{place.group.liberties.length}} {{place.color}}" ng-hide="place.group.liberties.length == 0">
@@ -135,26 +176,26 @@
 		
 		<!-- controls and display -->
 		<div class="well well-sm">
-			<a href="#" class="btn btn-inverse" ng-click="pass();">Pass</a>
-			<a href="#" class="btn btn-inverse" ng-click="undo();"><i class="icon-white icon-arrow-left"></i> Undo</a>
-			<a href="#" class="btn btn-inverse" ng-click="redo();">Redo <i class="icon-white icon-arrow-right"></i></a>
+			<a href="javascript:void();" class="btn btn-inverse" ng-click="pass();">Pass</a>
+			<a href="javascript:void();" class="btn btn-inverse" ng-click="undo();"><i class="icon-white icon-arrow-left"></i> Undo</a>
+			<a href="javascript:void();" class="btn btn-inverse" ng-click="redo();">Redo <i class="icon-white icon-arrow-right"></i></a>
 			<br/>
 			<br/>
-			<span ng-hide="getBoard().isInScoringMode()">
-				<b>{{(getBoard().getTurnColor()=='b')?'Black':'White'}} to play.</b><br/>
-				<span ng-hide="getBoard().turnCount == 0">
-					({{(getBoard().getTurnColor()=='b')?'White':'Black'}} {{(getBoard().playedPlace != null)?"played "+getBoard().playedPlace.x+","+getBoard().playedPlace.y:"passed"}})
+			<span ng-hide="board.isInScoringMode()">
+				<b>{{(board.getTurnColor()=='b')?'Black':'White'}} to play.</b><br/>
+				<span ng-hide="board.turnCount == 0">
+					({{(board.getTurnColor()=='b')?'White':'Black'}} {{(board.playedPlace != null)?"played "+board.playedPlace.x+","+board.playedPlace.y:"passed"}})
 				</span><br/><br/>
 			</span>
 			
-			<span ng-hide="!getBoard().isInScoringMode()">
+			<span ng-hide="!board.isInScoringMode()">
 				<b>Click groups to toggle marked as dead.</b><br/>
 				<br/>
 			</span>
-			Black captured: {{getBoard().prisoners['w']}}<br/>
-			White captured: {{getBoard().prisoners['b']}}<br/>
+			Black captured: {{board.prisoners['w']}}<br/>
+			White captured: {{board.prisoners['b']}}<br/>
 			<br/>
-			<div ng-hide="!getBoard().isInScoringMode()">
+			<div ng-hide="!board.isInScoringMode()">
 				<u>Score</u>:<br/>
 				<br/>
 				<b>Black</b>:<br/>
