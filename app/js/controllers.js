@@ -516,7 +516,7 @@ myGoApp.controller('testCtrl', function($scope) {
 });
 
 myGoApp.controller('goGameCtrl', function($scope) {
-	var size = 13;
+	var size = 9;
 	var squareSize = 60;
 	$scope.size = size;
 	$scope.squareSize = squareSize;
@@ -551,6 +551,17 @@ myGoApp.controller('goGameCtrl', function($scope) {
 		game.board.redo();
 	};
 	
+	$scope.getTerritoryImgPath = function(place) {
+		var path;
+		
+		if (game.board.isInScoringMode()) {
+			path = "img/" + place.territoryGroup.ownerColor+'Territory.png';
+		} else
+			path = "";
+		
+		return path;
+	};
+	
 	$scope.getPlaceImgPath = function(place) {
 		var path = "img/";
 		
@@ -560,9 +571,7 @@ myGoApp.controller('goGameCtrl', function($scope) {
 			else
 				path += place.color+'Stone';
 		} else {
-			if (place.color == 'e') {
-				path += place.territoryGroup.ownerColor+'Territory';
-			}
+			path += place.color+'Stone';
 		}
 	
 		path += ".png";

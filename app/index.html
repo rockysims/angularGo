@@ -158,14 +158,24 @@
 		}
 		
 		.stone {
+			position: absolute;
+			top: 8px;
+			left: 8px;
 			width: 45px;
 			height: 45px;
-			margin-top: 8px;
 		}
 		
 		.stone.dead {
 			opacity:0.5;
 			filter:alpha(opacity=50); /* For IE8 and earlier */
+		}
+		
+		.territory {
+			position: absolute;
+			top: 8px;
+			left: 8px;
+			width: 45px;
+			z-index: 2;
 		}
 	</style>
 	
@@ -175,16 +185,10 @@
 			ng-repeat="(i, place) in getPlaces()" 
 			ng-click="onClickPlace(place);">
 			
-			<!--
+			<img class="territory" src="{{getTerritoryImgPath(place)}}" ng-show="getBoard().isInScoringMode()" />
 			<img class="stone dangerLevel{{(getBoard().isInScoringMode())?0:place.group.liberties.length}} {{(place.markedAsDead)?'dead':''}}"
 				style="width:{{place.size}}px; height:{{place.size}}px;"
 				ng-src="{{getPlaceImgPath(place)}}" />
-			
-			
-			
-			-->
-			<img class="stone dangerLevel{{(getBoard().isInScoringMode())?0:place.group.liberties.length}} {{(place.markedAsDead)?'dead':''}}"
-				ng-src="img/{{(getBoard().koPlace == place)?'koPlace':place.color+'Stone'}}.png" />
 			
 			<div class="liberties liberties{{place.group.liberties.length}} {{place.color}}" ng-hide="place.group.liberties.length == 0">
 				{{place.group.liberties.length}}
