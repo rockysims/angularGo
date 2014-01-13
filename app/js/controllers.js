@@ -1,48 +1,13 @@
 'use strict';
 
-/* Utilities */
-var arrayRemove = function(ary, e) {
-	if (typeof(ary) == 'undefined') 
-		alert("arrayRemove(): Error: typeof(ary) == 'undefined'.");
-//	if (typeof(ary) != 'array') 
-//		throw "arrayRemove(): Error: typeof(ary) != 'array'.";
-	var index = ary.indexOf(e);
-	if (index > -1) {
-	    ary.splice(index, 1);
-	}
-	
-	if (typeof(ary) == 'undefined') 
-		alert("arrayRemove(): Error: return undefined");
-		
-	return ary;
-};
-
-var arrayMerge = function(a1, a2) {
-	var a = a1.concat(a2);
-	for(var i=0; i<a.length; ++i) {
-		for(var j=i+1; j<a.length; ++j) {
-			if(a[i] === a[j])
-				a.splice(j--, 1);
-		}
-	}
-	
-	return a;
-};
-/* Utilities ^^ */
-
 /* Go game logic */
 
 /* TODO
 fix scoring bug where marking friendly stones in your territory as dead is allowed
-onHover, display 50% opacity stone
-	set board.consideredPlace = hoveredPlace
-
-
 
 Later:
 mark cutting points and protected points like tiger's mouth
 mark forcing moves
-mark dead stones
 mark potential, false, and complete eyes
 outline living stones
 onHover, show change in liberties, enemy liberties removed, territory gained (as range)?
@@ -52,16 +17,12 @@ for each place, add 30% opacity background (above board and below stone) where h
 		100% of liberties for closest empty space and 25% for 4th empty space away
 */
 
-var EMPTY = "e";
-var BLACK = "b";
-var WHITE = "w";
-
 //wraps a place on the board which could have a stone
 var Place = function(x, y, board) {
 	this.x = x;
 	this.y = y;
 	this.board = board;
-	this.color = EMPTY;
+	this.color = "e"; //"e" == empty, "b" == black stone, "w" == white stone
 	this.group = new Group(this);
 	this.territoryGroup = null;
 	this.markedAsDead = false;
@@ -88,6 +49,10 @@ Place.prototype.getAdjacentPlaces = function() {
 	return this.adjacents;
 };
 
+
+// ===================================================================================================================================================================================
+
+
 //Group represents an array of places all of the same color
 var nextGroupId = 0;
 var Group = function(place) {
@@ -96,7 +61,7 @@ var Group = function(place) {
 	this.color = place.color;
 	this.stones = [place];
 	
-	if (this.color != EMPTY) {
+	if (this.color != "e") {
 		//add adjacent stones/liberties to this group recursively
 		var checkAdjacentPlacesRecurs = function(center, group) {
 			var a, i;
@@ -107,7 +72,7 @@ var Group = function(place) {
 					//adjacent stone not already part of group
 					
 					//add place as liberty (if not already added)
-					if (a.color == EMPTY) {
+					if (a.color == "e") {
 						if (group.liberties.indexOf(a) == -1)
 							group.liberties.push(a);
 					}
@@ -124,7 +89,10 @@ var Group = function(place) {
 		checkAdjacentPlacesRecurs(place, this);
 	}
 };
-//*/
+
+
+// ===================================================================================================================================================================================
+
 
 var nextBoardId = 0;
 var Board = function(size) {
@@ -189,7 +157,7 @@ Board.prototype.isValidMove = function(place) {
 	var adjacentPlaces = place.getAdjacentPlaces();
 	
 	//can only play on empty places
-	if (place.color != EMPTY)
+	if (place.color != "e")
 		return false;
 	
 	//no suicide
@@ -198,7 +166,7 @@ Board.prototype.isValidMove = function(place) {
 	var friendlySupport = false;
 	for (i in adjacentPlaces) {
 		a = adjacentPlaces[i];
-		if (a.color == EMPTY)
+		if (a.color == "e")
 			liberties++;
 		else if (a.color != this.getTurnColor()) { //enemy stone
 			if (a.group.liberties.length == 1) {
@@ -391,6 +359,10 @@ Board.prototype.toggleMarkedAsDead = function(x, y) {
 	}
 };
 
+
+// ===================================================================================================================================================================================
+
+
 var nextTerritoryGroupId = 0;
 var TerritoryGroup = function(place) {
 	this.id = nextTerritoryGroupId++; //a unique this.id seems to make it much easier for angular to test if two groups are equal
@@ -444,6 +416,10 @@ var TerritoryGroup = function(place) {
 	if (this.ownerColor == 'c')
 		this.ownerColor = 'e';
 };
+
+
+// ===================================================================================================================================================================================
+
 
 var GoGame = function (size) {
 	this.board = new Board(size);
@@ -510,6 +486,10 @@ GoGame.prototype.getScore = function() {
 	return score;
 };
 /* Go game logic ^^ */
+
+
+// ===================================================================================================================================================================================
+
 
 /* Controllers */
 

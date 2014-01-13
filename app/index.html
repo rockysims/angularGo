@@ -109,7 +109,9 @@
 		}
 	</script>
 	
-	<div class="board" ng-controller="goGameCtrl" ng-mouseout="getBoard().consideredPlace = null;">
+	<div class="game" ng-controller="goGameCtrl" ng-mouseout="getBoard().consideredPlace = null;">
+		
+		<!-- board and stones -->
 		<canvas id="canvas" width="{{size*squareSize}}px" height="{{size*squareSize}}px"></canvas>
 		<div class="place" style="left:{{place.x*squareSize+20}}px;top:{{place.y*squareSize+20}}px;"
 			ng-repeat="(i, place) in getPlaces()" 
@@ -121,7 +123,7 @@
 				ng-hide="getBoard().isInScoringMode()" />
 			<img class="territory" src="{{getTerritoryImgPath(place)}}" ng-show="getBoard().isInScoringMode()" />
 			<img class="stone dangerLevel{{(getBoard().isInScoringMode())?0:place.group.liberties.length}} {{(place.markedAsDead)?'dead':''}}"
-				style="width:{{place.size}}px; height:{{place.size}}px;"
+				
 				ng-src="{{getPlaceImgPath(place)}}" />
 			
 			<div class="liberties liberties{{place.group.liberties.length}} {{place.color}}" ng-hide="place.group.liberties.length == 0">
@@ -130,10 +132,13 @@
 		</div>
 		<br/>
 		<br/>
+		
+		<!-- controls and display -->
 		<div class="well well-sm">
 			<a href="#" class="btn btn-inverse" ng-click="pass();">Pass</a>
 			<a href="#" class="btn btn-inverse" ng-click="undo();"><i class="icon-white icon-arrow-left"></i> Undo</a>
-			<a href="#" class="btn btn-inverse" ng-click="redo();">Redo <i class="icon-white icon-arrow-right"></i></a><br/>
+			<a href="#" class="btn btn-inverse" ng-click="redo();">Redo <i class="icon-white icon-arrow-right"></i></a>
+			<br/>
 			<br/>
 			<span ng-hide="getBoard().isInScoringMode()">
 				<b>{{(getBoard().getTurnColor()=='b')?'Black':'White'}} to play.</b><br/>
