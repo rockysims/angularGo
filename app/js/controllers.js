@@ -138,6 +138,8 @@ var Board = function(size) {
 	this.prisoners['w'] = 0;
 	this.koPlace = null;
 	this.playedPlace = null;
+	this.clickSound = new Audio('sound/click.mp3');
+	this.clickSound.volume = 0.5; //50%
 	this.places = [];
 	var places = this.places;
 	
@@ -232,6 +234,8 @@ Board.prototype.placeStone = function(x, y) {
 		place.color = color;
 		this.turnCount++;
 		capturedPlaces = this.resolveCaptures(place);
+		
+		this.clickSound.play();
 		
 		this.refresh();
 		

@@ -99,92 +99,14 @@
 		}
 	</script>
 	
-	<style type="text/css">
-		div.place {
-			position: absolute;
-			border: 0px solid green;
-			width: 60px;
-			height: 60px;
-			text-align: center;
-			vertical-align: middle;
-			z-index: 10;
-		}
-		div.place .liberties {
-			position: absolute;
-			left: 16px;
-			top: 23px;
-			width: 30px;
-			text-align: center;
-			font-size: 8pt;
-			margin-top: 3px;
-			display:none;
-		}
-		
-		div.place .w {
-			color: black;
-		}
-		div.place .b {
-			color: white;
-		}
-		
-		img.stone.dangerLevel1 {
-			-moz-box-shadow: 0 0 5px red;
-			-webkit-box-shadow: 0 0 5px red;
-			box-shadow: 0px 0px 5px red;
-			
-			-moz-border-radius: 22px;
-			-webkit-border-radius: 22px;
-			border-radius: 22px;
-		}
-		
-		img.stone.dangerLevel2 {
-			-moz-box-shadow: 0 0 5px yellow;
-			-webkit-box-shadow: 0 0 5px yellow;
-			box-shadow: 0px 0px 5px yellow;
-			
-			-moz-border-radius: 22px;
-			-webkit-border-radius: 22px;
-			border-radius: 22px;
-		}
-		
-		img.stone.dangerLevel3 {
-			-moz-box-shadow: 0 0 3px lime;
-			-webkit-box-shadow: 0 0 3px lime;
-			box-shadow: 0px 0px 3px lime;
-			
-			-moz-border-radius: 22px;
-			-webkit-border-radius: 22px;
-			border-radius: 22px;
-		}
-		
-		.stone {
-			position: absolute;
-			top: 8px;
-			left: 8px;
-			width: 45px;
-			height: 45px;
-		}
-		
-		.stone.dead {
-			opacity:0.5;
-			filter:alpha(opacity=50); /* For IE8 and earlier */
-		}
-		
-		.territory {
-			position: absolute;
-			top: 8px;
-			left: 8px;
-			width: 45px;
-			z-index: 2;
-		}
-	</style>
-	
-	<div class="board" ng-controller="goGameCtrl">
+	<div class="board" ng-controller="goGameCtrl" ng-mouseout="getBoard().consideredPlace = null;">
 		<canvas id="canvas" width="{{size*squareSize}}px" height="{{size*squareSize}}px"></canvas>
 		<div class="place" style="left:{{place.x*squareSize+8}}px;top:{{place.y*squareSize+7}}px;"
 			ng-repeat="(i, place) in getPlaces()" 
-			ng-click="onClickPlace(place);">
+			ng-click="onClickPlace(place);"
+			ng-mouseover="getBoard().consideredPlace = place;">
 			
+			<img class="considered stone" src="{{(getBoard().consideredPlace == place && getBoard().isValidMove(place))?'img/'+getBoard().getTurnColor()+'Stone.png':''}}" />
 			<img class="territory" src="{{getTerritoryImgPath(place)}}" ng-show="getBoard().isInScoringMode()" />
 			<img class="stone dangerLevel{{(getBoard().isInScoringMode())?0:place.group.liberties.length}} {{(place.markedAsDead)?'dead':''}}"
 				style="width:{{place.size}}px; height:{{place.size}}px;"

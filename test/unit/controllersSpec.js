@@ -209,7 +209,6 @@ describe('Board', function() {
 	});
 	
 	it("for 3 touching friendly stones liberties.length is correct", function() {
-		return;
 		var place;
 		place = board.getPlaceByXY(4, 4); //black
 		board.placeStone(place);
@@ -224,21 +223,7 @@ describe('Board', function() {
 		
 		var liberties = place.group.liberties;
 		
-		expect(liberties.length).toBe(6);
-		
-		var p;
-		p = liberties[0];
-		expect(p.x+","+p.y).toBe("6,4");
-		p = liberties[1];
-		expect(p.x+","+p.y).toBe("5,5");
-		p = liberties[2];
-		expect(p.x+","+p.y).toBe("5,3");
-		p = liberties[3];
-		expect(p.x+","+p.y).toBe("3,4");
-		p = liberties[4];
-		expect(p.x+","+p.y).toBe("4,5");
-		p = liberties[5];
-		expect(p.x+","+p.y).toBe("4,3");
+		expect(liberties.length).toBe(8);
 	});
 	
 	/* TODO: Test Scoring */
